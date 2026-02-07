@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="th" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดตารางสอน Pro - จัดการรายวิชา</title>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- App Scripts -->
+    <script src="js/supabase-client.js?v=2"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/common.js?v=2"></script>
+    <script src="js/layout.js?v=2"></script>
+    <script src="js/pages/subjects.js?v=2" defer></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .modal-backdrop {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-green-50 via-white to-emerald-50 h-full">
+
+    <div id="app" class="app-wrapper w-full h-full flex flex-col">
+        <!-- Layout.js will inject Header here -->
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto w-full px-4 py-6">
+            <div id="page-subjects" class="page-view">
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-green-800">📚 จัดการรายวิชา</h2>
+                        <button onclick="openAddSubjectModal()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-md transition-transform hover:scale-105">
+                            + เพิ่มรายวิชา
+                        </button>
+                    </div>
+
+                    <div class="relative mb-4">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">🔍</span>
+                        <input type="text" id="search-subjects" placeholder="ค้นหารายวิชา... (รหัส, ชื่อ, ครู)"
+                            class="w-full pl-10 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none transition-colors">
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full">
+                            <thead class="bg-green-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">รหัสวิชา</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ชื่อวิชา</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ครูผู้สอน</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ระดับชั้น</th>
+                                    <th class="px-4 py-3 text-center font-semibold text-green-800">คาบ/สัปดาห์</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ประเภทห้อง</th>
+                                    <th class="px-4 py-3 text-center font-semibold text-green-800">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjects-tbody" class="divide-y divide-gray-200 bg-white">
+                                <tr class="text-center text-gray-500">
+                                    <td colspan="7" class="py-12">กำลังโหลดข้อมูล...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div id="add-subject-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 modal-backdrop transform transition-all">
+            <h3 class="text-xl font-bold text-green-800 mb-6 flex items-center gap-2">
+                <span>📚</span> เพิ่มรายวิชาใหม่
+            </h3>
+            <form id="add-subject-form" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">รหัสวิชา</label>
+                        <input type="text" id="subject-code" required placeholder="ว21101"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">ระดับชั้น</label>
+                        <select id="subject-grade" required
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none bg-white">
+                            <option value="">-- เลือก --</option>
+                            <option value="ม.1">ม.1</option>
+                            <option value="ม.2">ม.2</option>
+                            <option value="ม.3">ม.3</option>
+                            <option value="ม.4">ม.4</option>
+                            <option value="ม.5">ม.5</option>
+                            <option value="ม.6">ม.6</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อรายวิชา</label>
+                    <input type="text" id="subject-name" required placeholder="วิทยาศาสตร์พื้นฐาน 1"
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">ครูผู้สอน</label>
+                    <select id="subject-teacher" required
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none bg-white">
+                        <option value="">กำลังโหลดรายชื่อครู...</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">จำนวนคาบ/สัปดาห์</label>
+                        <input type="number" id="subject-hours" min="1" max="10" value="1"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">ประเภทวิชา</label>
+                        <select id="subject-type"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none bg-white">
+                            <option value="Theory">ทฤษฎี</option>
+                            <option value="Lab">ปฏิบัติ</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">ประเภทห้องที่ต้องการ</label>
+                    <select id="subject-room-type"
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none bg-white">
+                        <option value="">ห้องเรียนทั่วไป</option>
+                        <option value="Lab Science">ห้องวิทย์</option>
+                        <option value="Computer Lab">ห้องคอมพิวเตอร์</option>
+                        <option value="Art Room">ห้องศิลปะ</option>
+                        <option value="Sport Field">สนามพละ</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeAddSubjectModal()"
+                        class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button type="submit"
+                        class="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow transition-colors">
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

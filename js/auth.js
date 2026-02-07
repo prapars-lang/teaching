@@ -5,31 +5,61 @@ const auth = {
     currentSchool: null,
 
     async init() {
+        const isLoginPage = window.location.pathname.includes('login.html');
+
         // 1. Authenticate with Platform
         const { data: { session } } = await platformClient.auth.getSession();
 
         if (session?.user) {
             this.user = session.user;
             await this.connectToSchool();
+
+            // Redirect if on login page
+            if (isLoginPage) {
+                window.location.href = 'index.html';
+                return;
+            }
+        } else {
+            // No session
+            if (!isLoginPage) {
+                // Save current URL for redirect back?
+                // For now, simplicity:
+                window.location.href = 'login.html';
+                return;
+            }
         }
 
         // Auth State Listener (Platform)
         platformClient.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
                 this.user = session.user;
-                await this.connectToSchool();
+                if (!this.currentSchool) await this.connectToSchool();
+
+                if (window.location.pathname.includes('login.html')) {
+                    window.location.href = 'index.html';
+                }
             } else {
                 this.user = null;
                 this.profile = null;
                 this.currentSchool = null;
-                // Reset to specific client null or default? 
-                // Currently appSupabaseClient resets to platform via reload usually, 
-                // but here we might want to reload page on logout.
+
+                if (!window.location.pathname.includes('login.html')) {
+                    window.location.href = 'login.html';
+                }
             }
-            this.updateUI();
+            this.updateUI(); // For RBAC mainly
         });
 
-        this.updateUI();
+        // If we are here, we are either:
+        // 1. Logged in and on a content page (or just redirected)
+        // 2. Not logged in and on login page
+
+        // If logged in, initialize app
+        if (this.user && this.currentSchool) {
+            if (window.initApp) {
+                window.initApp();
+            }
+        }
     },
 
     async connectToSchool() {
@@ -43,36 +73,32 @@ const auth = {
             return;
         }
 
-        // For prototype, auto-select first school
         const school = schools[0];
         this.currentSchool = school;
         console.log(`Resource Resolved: ${school.name}`);
 
         // 3. Initialize School DB Connection
-        // This updates the global 'appSupabaseClient' used by app.js and dataSdk
         initSchoolClient(school.db_config.url, school.db_config.key);
 
         // 4. Load Profile from School DB
         await this.fetchProfile();
-
-        // 5. Initialize App Logic (if getting data)
-        if (window.initApp) {
-            // Reset listeners flag if strictly needed, or reliance on reload
-            // If switching users without reload, we might need to reset appState
-        }
     },
 
     async login(email, password) {
         const { data, error } = await platformClient.auth.signInWithPassword({ email, password });
         if (error) {
-            alert('Login failed: ' + error.message);
+            console.error("Login Failed:", error);
+            if (error.message.includes('Invalid login credentials')) {
+                alert('ไม่พบผู้ใช้งาน หรือ รหัสผ่านไม่ถูกต้อง');
+            } else {
+                alert('Login failed: ' + error.message);
+            }
             return false;
         }
         return true;
     },
 
     async register(email, password, role = 'teacher', name = '') {
-        // Register on Platform
         const { data, error } = await platformClient.auth.signUp({
             email,
             password,
@@ -87,7 +113,7 @@ const auth = {
         }
 
         if (data.user) {
-            alert('Registration successful! You can now login.');
+            alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
             return true;
         }
         return false;
@@ -95,16 +121,16 @@ const auth = {
 
     async logout() {
         await platformClient.auth.signOut();
-        window.location.reload();
+        // Listener will handle redirect
     },
 
     async fetchProfile() {
         if (!this.user) return;
         try {
-            // This query runs against the SCHOOL DB (appSupabaseClient)
             const { data, error } = await appSupabaseClient.from('profiles').select('*').eq('id', this.user.id).maybeSingle();
             if (data) {
                 this.profile = data;
+                this.updateUI();
             }
         } catch (e) {
             console.error(e);
@@ -112,24 +138,10 @@ const auth = {
     },
 
     updateUI() {
-        const loginModal = document.getElementById('login-modal');
-        const appContent = document.getElementById('app');
         const userInfo = document.getElementById('user-display-name');
 
-        if (this.user && this.currentSchool) {
-            if (loginModal) loginModal.classList.add('hidden');
-            if (appContent) {
-                appContent.classList.remove('hidden');
-
-                // Initialize Data if not loaded
-                if (window.initApp && (appState.allData.teachers.length === 0 && appState.allData.subjects.length === 0)) {
-                    window.initApp();
-                }
-            }
-
-            if (userInfo) {
-                userInfo.textContent = `${this.profile?.full_name || this.user.email} (${this.currentSchool.name})`;
-            }
+        if (this.user && this.currentSchool && userInfo) {
+            userInfo.textContent = `${this.profile?.full_name || this.user.email} (${this.currentSchool.name})`;
 
             // Role Based Access Control
             const role = this.profile?.role || 'teacher';
@@ -140,56 +152,16 @@ const auth = {
                     el.classList.add('hidden');
                 }
             });
-
-        } else {
-            if (loginModal) loginModal.classList.remove('hidden');
-            if (appContent) appContent.classList.add('hidden');
         }
     }
 };
 
 window.auth = auth;
 
-// UI Helpers
-window.showRegister = () => {
-    document.getElementById('login-modal')?.classList.add('hidden');
-    document.getElementById('register-modal')?.classList.remove('hidden');
-};
-
-window.showLogin = () => {
-    document.getElementById('register-modal')?.classList.add('hidden');
-    document.getElementById('login-modal')?.classList.remove('hidden');
-};
-
 // Auto init auth logic
 document.addEventListener('DOMContentLoaded', () => {
+    // Only auto-init if not already handled by manual script call (login.html)
+    // But login.html also includes auth.js.
+    // We should rely on browser default behavior.
     auth.init();
-
-    // Bind Login Form
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            await auth.login(email, password);
-        });
-    }
-
-    // Bind Register Form
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            await auth.register(email, password, 'teacher', name);
-            // After register success, show login or auto login?
-            // current register logic alerts and returns true. 
-            // It doesn't auto login (Supabase might, but we didn't handle that explicitly in auth.register return).
-            // Let's assume user needs to login or we switch to login view.
-            window.showLogin();
-        });
-    }
 });

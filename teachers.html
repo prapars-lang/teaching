@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="th" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดตารางสอน Pro - จัดการครู</title>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- App Scripts -->
+    <script src="js/supabase-client.js?v=2"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/common.js?v=2"></script>
+    <script src="js/layout.js?v=2"></script>
+    <script src="js/pages/teachers.js?v=2" defer></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .modal-backdrop {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-green-50 via-white to-emerald-50 h-full">
+
+    <div id="app" class="app-wrapper w-full h-full flex flex-col">
+        <!-- Layout.js will inject Header here -->
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto w-full px-4 py-6">
+            <div id="page-teachers" class="page-view">
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-green-800">👨🏫 จัดการครู</h2>
+                        <button onclick="openAddTeacherModal()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-md transition-transform hover:scale-105">
+                            + เพิ่มครู
+                        </button>
+                    </div>
+
+                    <div class="relative mb-4">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">🔍</span>
+                        <input type="text" id="search-teachers" placeholder="ค้นหาครู... (ชื่อ, กลุ่มสาระ)"
+                            class="w-full pl-10 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none transition-colors">
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full">
+                            <thead class="bg-green-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ชื่อครู</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">กลุ่มสาระ</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">เบอร์โทร</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">อาคาร</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">คาบ/สัปดาห์</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ช่วงเวลาไม่สะดวก</th>
+                                    <th class="px-4 py-3 text-center font-semibold text-green-800">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teachers-tbody" class="divide-y divide-gray-200 bg-white">
+                                <tr class="text-center text-gray-500">
+                                    <td colspan="7" class="py-12">กำลังโหลดข้อมูล...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Teacher Modal -->
+    <div id="add-teacher-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 modal-backdrop transform transition-all">
+            <h3 class="text-xl font-bold text-green-800 mb-6 flex items-center gap-2">
+                <span>👨🏫</span> เพิ่มครูใหม่
+            </h3>
+            <form id="add-teacher-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อ-นามสกุล</label>
+                    <input type="text" id="teacher-name" required placeholder="เช่น ครูสมศรี ใจดี"
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">กลุ่มสาระการเรียนรู้</label>
+                    <select id="teacher-department" required
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none bg-white">
+                        <option value="">-- เลือกกลุ่มสาระ --</option>
+                        <option value="ภาษาไทย">ภาษาไทย</option>
+                        <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                        <option value="วิทยาศาสตร์">วิทยาศาสตร์</option>
+                        <option value="สังคมศึกษา">สังคมศึกษา</option>
+                        <option value="ภาษาอังกฤษ">ภาษาอังกฤษ</option>
+                        <option value="ศิลปะ">ศิลปะ</option>
+                        <option value="พลศึกษา">พลศึกษา</option>
+                        <option value="การงานอาชีพ">การงานอาชีพ</option>
+                        <option value="เทคโนโลยี">เทคโนโลยี</option>
+                        <option value="แนะแนว">แนะแนว</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">เบอร์โทรศัพท์</label>
+                        <input type="tel" id="teacher-phone" placeholder="08x-xxx-xxxx"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">อาคารประจำ</label>
+                        <input type="text" id="teacher-building" placeholder="เช่น อาคาร 1"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">ภาระงานสอนสูงสุด (คาบ/สัปดาห์)</label>
+                    <input type="number" id="teacher-max-periods" min="1" max="50" value="20"
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        ช่วงเวลาที่ไม่สะดวก (ตัวอย่าง: จันทร์-เช้า, ศุกร์-บ่าย)
+                    </label>
+                    <input type="text" id="teacher-unavailable" placeholder="ระบุช่วงเวลา..."
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    <p class="text-xs text-gray-500 mt-1">* ใช้เพื่อแจ้งให้ทราบ
+                        (ยังไม่มีผลกับการจัดตารางอัตโนมัติในขณะนี้)</p>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeAddTeacherModal()"
+                        class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button type="submit"
+                        class="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow transition-colors">
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 transform scale-100">
+            <h3 id="confirm-title" class="text-lg font-bold text-gray-800 mb-2">ยืนยัน</h3>
+            <p id="confirm-message" class="text-gray-600 mb-6">คุณต้องการดำเนินการนี้หรือไม่?</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeConfirmModal()"
+                    class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">ยกเลิก</button>
+                <button id="confirm-btn"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

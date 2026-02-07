@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="th" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - ระบบจัดตารางสอน Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+
+    <script src="js/platform-mock.js?v=2"></script>
+    <script src="js/supabase-client.js?v=2"></script>
+    <!-- We don't include auth.js here because we handle login logic locally to avoid auto-redirect loop, 
+         OR we modify auth.js to support login page. 
+         Let's include auth.js but modify it to NOT redirect if on login.html. 
+    -->
+    <script src="js/auth.js?v=3"></script>
+</head>
+
+<body class="bg-gradient-to-br from-green-500 to-emerald-700 h-full flex items-center justify-center p-4">
+
+    <!-- Login Container -->
+    <div id="login-container"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-100">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">เข้าสู่ระบบ</h2>
+            <p class="text-gray-500">ระบบจัดตารางสอน Pro</p>
+        </div>
+        <form id="login-form" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">อีเมล</label>
+                <input type="email" id="email" required
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all"
+                    placeholder="admin@school.com">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน</label>
+                <input type="password" id="password" required
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all"
+                    placeholder="••••••••">
+            </div>
+            <button type="submit"
+                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-all transform hover:scale-[1.02] shadow-lg">
+                เข้าสู่ระบบ
+            </button>
+        </form>
+        <p class="mt-6 text-center text-sm text-gray-500">
+            ยังไม่มีบัญชี? <a href="#" onclick="toggleAuthMode('register')"
+                class="text-green-600 hover:text-green-700 font-semibold">ลงทะเบียน</a>
+        </p>
+    </div>
+
+    <!-- Register Container (Hidden) -->
+    <div id="register-container"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-100 hidden">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">ลงทะเบียน</h2>
+            <p class="text-gray-500">สำหรับคุณครูใหม่</p>
+        </div>
+        <form id="register-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล</label>
+                <input type="text" id="reg-name" required
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 outline-none transition-all"
+                    placeholder="ครูสมศรี ใจดี">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+                <input type="email" id="reg-email" required
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 outline-none transition-all"
+                    placeholder="teacher@school.com">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
+                <input type="password" id="reg-password" required
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 outline-none transition-all"
+                    placeholder="••••••••">
+            </div>
+            <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all transform hover:scale-[1.02] shadow-lg">
+                ลงทะเบียน
+            </button>
+        </form>
+        <p class="mt-6 text-center text-sm text-gray-500">
+            มีบัญชีอยู่แล้ว? <a href="#" onclick="toggleAuthMode('login')"
+                class="text-blue-600 hover:text-blue-700 font-semibold">เข้าสู่ระบบ</a>
+        </p>
+    </div>
+
+    <script>
+        function toggleAuthMode(mode) {
+            document.getElementById('login-container').classList.toggle('hidden', mode === 'register');
+            document.getElementById('register-container').classList.toggle('hidden', mode === 'login');
+        }
+
+        // Auth Logic Override/Extension
+        document.addEventListener('DOMContentLoaded', () => {
+            // If already logged in, redirect to dashboard
+            // We rely on auth.js init, but we can check session directly too
+            // auth.js will run and updateUI.
+
+            // Setup Forms
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const success = await auth.login(email, password);
+                if (success) {
+                    window.location.href = 'index.html';
+                }
+            });
+
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('reg-name').value;
+                const email = document.getElementById('reg-email').value;
+                const password = document.getElementById('reg-password').value;
+                const success = await auth.register(email, password, 'teacher', name);
+                if (success) {
+                    toggleAuthMode('login');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

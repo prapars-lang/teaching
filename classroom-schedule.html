@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="th" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดตารางสอน Pro - ตารางห้องเรียน</title>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- App Scripts -->
+    <script src="js/supabase-client.js?v=2"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/common.js?v=2"></script>
+    <script src="js/layout.js?v=2"></script>
+    <script src="js/pages/classroom-schedule.js?v=2" defer></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-green-50 via-white to-emerald-50 h-full">
+
+    <div id="app" class="app-wrapper w-full h-full flex flex-col">
+        <!-- Layout.js will inject Header here -->
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto w-full px-4 py-6">
+            <div id="page-classroom-schedule" class="page-view">
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-green-800 mb-6 flex items-center gap-2">
+                        <span>🏫</span> ตารางการใช้ห้องเรียน
+                    </h2>
+
+                    <div class="mb-6 flex items-center gap-4">
+                        <label class="font-semibold text-gray-700">เลือกห้องเรียน:</label>
+                        <select id="classroom-select-grid"
+                            class="border-2 border-green-100 rounded-lg px-4 py-2 focus:border-green-500 outline-none text-gray-700 font-medium w-64">
+                            <option value="">กำลังโหลด...</option>
+                        </select>
+                        <div id="classroom-grid-info"
+                            class="hidden flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+                            <span>ใช้งาน:</span>
+                            <span id="classroom-total-periods" class="font-bold">0</span>
+                            <span>คาบ/สัปดาห์</span>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="p-2 border border-gray-200 bg-gray-100 text-gray-600 font-semibold w-20">
+                                        วัน/เวลา</th>
+                                    <th class="p-2 border border-gray-200 bg-gray-50 text-green-800 font-semibold">
+                                        08:30-09:20</th>
+                                    <th class="p-2 border border-gray-200 bg-gray-50 text-green-800 font-semibold">
+                                        09:20-10:10</th>
+                                    <th class="p-2 border border-gray-200 bg-gray-50 text-green-800 font-semibold">
+                                        10:10-11:00</th>
+                                    <th class="p-2 border border-gray-200 bg-gray-50 text-green-800 font-semibold">
+                                        11:00-11:50</th>
+                                    <th
+                                        class="p-2 border border-gray-200 bg-amber-50 text-amber-800 font-semibold w-16">
+                                        พัก</th>
+                                    <th class="p-2 border border-gray-200 bg-gray-50 text-green-800 font-semibold">
+                                        12:30-13:20</th>
+                                    <th class="p-2 border border-gray-200 bg-gray-50 text-green-800 font-semibold">
+                                        13:20-14:10</th>
+                                    <th class="p-2 border border-gray-200 bg-gray-50 text-green-800 font-semibold">
+                                        14:10-15:00</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classroom-timetable-tbody">
+                                <tr class="text-center text-gray-400">
+                                    <td colspan="9" class="py-12">กรุณาเลือกห้องเรียน</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+
+</html>

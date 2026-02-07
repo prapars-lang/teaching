@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="th" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดตารางสอน Pro - จัดการห้องเรียน</title>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- App Scripts -->
+    <script src="js/supabase-client.js?v=2"></script>
+    <script src="js/auth.js?v=3"></script>
+    <script src="js/common.js?v=2"></script>
+    <script src="js/layout.js?v=2"></script>
+    <script src="js/pages/classrooms.js?v=2" defer></script>
+
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .modal-backdrop {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-green-50 via-white to-emerald-50 h-full">
+
+    <div id="app" class="app-wrapper w-full h-full flex flex-col">
+        <!-- Layout.js will inject Header here -->
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto w-full px-4 py-6">
+            <div id="page-classrooms" class="page-view">
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-green-800">🏢 จัดการห้องเรียน</h2>
+                        <button onclick="openAddClassroomModal()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-md transition-transform hover:scale-105">
+                            + เพิ่มห้องเรียน
+                        </button>
+                    </div>
+
+                    <div class="relative mb-4">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">🔍</span>
+                        <input type="text" id="search-classrooms" placeholder="ค้นหาห้องเรียน... (ชื่อ, อาคาร)"
+                            class="w-full pl-10 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none transition-colors">
+                    </div>
+
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full">
+                            <thead class="bg-green-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ชื่อห้อง</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">อาคาร</th>
+                                    <th class="px-4 py-3 text-center font-semibold text-green-800">ความจุ</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ประเภทห้อง</th>
+                                    <th class="px-4 py-3 text-center font-semibold text-green-800">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classrooms-tbody" class="divide-y divide-gray-200 bg-white">
+                                <tr class="text-center text-gray-500">
+                                    <td colspan="5" class="py-12">กำลังโหลดข้อมูล...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Classroom Modal -->
+    <div id="add-classroom-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 modal-backdrop transform transition-all">
+            <h3 class="text-xl font-bold text-green-800 mb-6 flex items-center gap-2">
+                <span>🏢</span> เพิ่มห้องเรียนใหม่
+            </h3>
+            <form id="add-classroom-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">ชื่อห้องเรียน</label>
+                    <input type="text" id="classroom-name" required placeholder="เช่น 101, LabCom 1"
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">อาคาร</label>
+                    <input type="text" id="classroom-building" placeholder="เช่น อาคาร 1"
+                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">ความจุ (คน)</label>
+                        <input type="number" id="classroom-capacity" min="1" max="100" value="40"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">ประเภทห้อง</label>
+                        <select id="classroom-type"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none bg-white">
+                            <option value="Normal">ห้องเรียนทั่วไป</option>
+                            <option value="Lab Science">ห้องวิทย์</option>
+                            <option value="Computer Lab">ห้องคอมพิวเตอร์</option>
+                            <option value="Art Room">ห้องศิลปะ</option>
+                            <option value="Sport Field">สนามพละ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeAddClassroomModal()"
+                        class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button type="submit"
+                        class="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow transition-colors">
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>
