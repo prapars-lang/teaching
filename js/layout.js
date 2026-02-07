@@ -4,13 +4,14 @@ const Layout = {
         if (!appContainer) return;
 
         // Header HTML
+        // Header HTML
         const headerHtml = `
         <header class="sticky top-0 z-40 bg-gradient-to-r from-green-600 to-emerald-500 text-white shadow-lg">
             <div class="max-w-full px-4 py-6">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                            <span class="text-2xl">📅</span>
+                        <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1 overflow-hidden shadow-md">
+                            <img src="https://img5.pic.in.th/file/secure-sv1/-668e94e3b2fda05e3.png" alt="Logo" class="w-full h-full object-contain">
                         </div>
                         <div>
                             <h1 class="text-2xl font-bold">ระบบจัดตารางสอน Pro</h1>
@@ -59,6 +60,17 @@ const Layout = {
 
         // Prepend Header to App Container
         appContainer.insertAdjacentHTML('afterbegin', headerHtml);
+
+        // Append Footer
+        const footerHtml = `
+        <footer class="mt-auto py-6 bg-white border-t border-gray-200 text-center text-sm shadow-inner mt-8">
+            <div class="container mx-auto px-4">
+                <p class="font-bold text-green-700 mb-1">ข้อความใต้เว็บ</p>
+                <p class="text-gray-500">&copy; 2024 ระบบจัดตารางสอน Pro. All rights reserved.</p>
+            </div>
+        </footer>
+        `;
+        appContainer.insertAdjacentHTML('beforeend', footerHtml);
     }
 };
 

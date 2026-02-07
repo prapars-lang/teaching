@@ -28,8 +28,10 @@
 
     <!-- Login Container -->
     <div id="login-container"
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-100">
-        <div class="text-center mb-8">
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-100 relative overflow-hidden">
+        <div class="text-center mb-8 relative z-10">
+            <img src="https://img5.pic.in.th/file/secure-sv1/-668e94e3b2fda05e3.png" alt="School Logo"
+                class="mx-auto h-24 mb-4 drop-shadow-md transition-transform hover:scale-110">
             <h2 class="text-3xl font-bold text-gray-800 mb-2">เข้าสู่ระบบ</h2>
             <p class="text-gray-500">ระบบจัดตารางสอน Pro</p>
         </div>
@@ -93,6 +95,10 @@
                 class="text-blue-600 hover:text-blue-700 font-semibold">เข้าสู่ระบบ</a>
         </p>
     </div>
+
+    <footer class="fixed bottom-0 w-full text-center py-4 text-green-100 text-sm bg-black/10 backdrop-blur-sm">
+        <p>ข้อความใต้เว็บ &copy; 2024 ระบบจัดตารางสอน Pro</p>
+    </footer>
 
     <script>
         function toggleAuthMode(mode) {

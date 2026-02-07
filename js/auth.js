@@ -108,7 +108,12 @@ const auth = {
         });
 
         if (error) {
-            alert('Register failed: ' + error.message);
+            console.error("Register Error:", error);
+            if (error.message.includes('rate limit') || error.status === 429) {
+                alert('การลงทะเบียนถูกจำกัดชั่วคราว (Rate Limit)\nกรุณาลองใหม่ในภายหลัง หรือติดต่อผู้ดูแลระบบ\n\n(Tip: เนื่องจากใช้ Demo Key แชร์กัน อาจเกิดปัญหานี้ได้)');
+            } else {
+                alert('Register failed: ' + error.message);
+            }
             return false;
         }
 
@@ -116,6 +121,13 @@ const auth = {
             alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
             return true;
         }
+
+        // Handle case where data.user is null but no error (e.g. rate limit w/o error throw?)
+        if (!data.user && !error) {
+            alert('อาจเกิดข้อผิดพลาดในการลงทะเบียน (Rate Limit or Network)');
+            return false;
+        }
+
         return false;
     },
 
