@@ -8,10 +8,23 @@ const auth = {
         const isLoginPage = window.location.pathname.includes('login.html');
 
         // 1. Authenticate with Platform
-        const { data: { session } } = await platformClient.auth.getSession();
+        let sessionUser = null;
 
+        // Check Supabase Session
+        const { data: { session } } = await platformClient.auth.getSession();
         if (session?.user) {
-            this.user = session.user;
+            sessionUser = session.user;
+        } else {
+            // Check Local Mock Session (Fallback for Rate Limits)
+            const mockUserStr = localStorage.getItem('demo_user_session');
+            if (mockUserStr) {
+                sessionUser = JSON.parse(mockUserStr);
+                console.warn('Using Local Demo Session (Offline Mode)');
+            }
+        }
+
+        if (sessionUser) {
+            this.user = sessionUser;
             await this.connectToSchool();
 
             // Redirect if on login page
@@ -22,8 +35,6 @@ const auth = {
         } else {
             // No session
             if (!isLoginPage) {
-                // Save current URL for redirect back?
-                // For now, simplicity:
                 window.location.href = 'login.html';
                 return;
             }
@@ -38,7 +49,8 @@ const auth = {
                 if (window.location.pathname.includes('login.html')) {
                     window.location.href = 'index.html';
                 }
-            } else {
+            } else if (!localStorage.getItem('demo_user_session')) {
+                // Only clear if NOT in demo mode
                 this.user = null;
                 this.profile = null;
                 this.currentSchool = null;
@@ -47,14 +59,10 @@ const auth = {
                     window.location.href = 'login.html';
                 }
             }
-            this.updateUI(); // For RBAC mainly
+            this.updateUI();
         });
 
-        // If we are here, we are either:
-        // 1. Logged in and on a content page (or just redirected)
-        // 2. Not logged in and on login page
-
-        // If logged in, initialize app
+        // Initialize App if Logged In
         if (this.user && this.currentSchool) {
             if (window.initApp) {
                 window.initApp();
@@ -80,14 +88,31 @@ const auth = {
         // 3. Initialize School DB Connection
         initSchoolClient(school.db_config.url, school.db_config.key);
 
-        // 4. Load Profile from School DB
-        await this.fetchProfile();
+        // 4. Load Profile from School DB (skip if mock user)
+        if (!this.user.is_mock) {
+            await this.fetchProfile();
+        } else {
+            this.profile = { full_name: this.user.user_metadata.display_name, role: 'teacher' };
+            this.updateUI();
+        }
     },
 
     async login(email, password) {
         const { data, error } = await platformClient.auth.signInWithPassword({ email, password });
         if (error) {
             console.error("Login Failed:", error);
+
+            // Fallback: Check local demo users
+            const mockUserStr = localStorage.getItem('demo_user_session');
+            if (mockUserStr) {
+                const mockUser = JSON.parse(mockUserStr);
+                if (mockUser.email === email) {
+                    alert('เข้าสู่ระบบแบบ Offline (Demo Mode) สำเร็จ');
+                    window.location.reload();
+                    return true;
+                }
+            }
+
             if (error.message.includes('Invalid login credentials')) {
                 alert('ไม่พบผู้ใช้งาน หรือ รหัสผ่านไม่ถูกต้อง');
             } else {
@@ -95,6 +120,9 @@ const auth = {
             }
             return false;
         }
+
+        // Clear demo session if real login succeeds
+        localStorage.removeItem('demo_user_session');
         return true;
     },
 
@@ -109,11 +137,31 @@ const auth = {
 
         if (error) {
             console.error("Register Error:", error);
+
+            // Rate Limit Logic -> Switch to Demo
             if (error.message.includes('rate limit') || error.status === 429) {
-                alert('การลงทะเบียนถูกจำกัดชั่วคราว (Rate Limit)\nกรุณาลองใหม่ในภายหลัง หรือติดต่อผู้ดูแลระบบ\n\n(Tip: เนื่องจากใช้ Demo Key แชร์กัน อาจเกิดปัญหานี้ได้)');
-            } else {
-                alert('Register failed: ' + error.message);
+                const proceedMock = confirm(
+                    'Server แจ้งเตือน: "Email Rate Limit Exceeded"\n\n' +
+                    'ระบบไม่สามารถส่งอีเมลยืนยันได้เนื่องจากโควต้าเต็ม (Free Tier Constraints)\n' +
+                    'คุณต้องการเปิดใช้งาน "Demo Mode" เพื่อเข้าใช้งานทันทีโดยไม่ผ่าน Server หรือไม่?'
+                );
+
+                if (proceedMock) {
+                    const mockUser = {
+                        id: 'mock-' + Date.now(),
+                        email: email,
+                        is_mock: true,
+                        user_metadata: { display_name: name, role: role }
+                    };
+                    localStorage.setItem('demo_user_session', JSON.stringify(mockUser));
+                    alert('เปิดใช้งาน Demo Mode สำเร็จ! กำลังเข้าสู่ระบบ...');
+                    window.location.reload();
+                    return true;
+                }
+                return false;
             }
+
+            alert('Register failed: ' + error.message);
             return false;
         }
 
@@ -121,19 +169,13 @@ const auth = {
             alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
             return true;
         }
-
-        // Handle case where data.user is null but no error (e.g. rate limit w/o error throw?)
-        if (!data.user && !error) {
-            alert('อาจเกิดข้อผิดพลาดในการลงทะเบียน (Rate Limit or Network)');
-            return false;
-        }
-
         return false;
     },
 
     async logout() {
         await platformClient.auth.signOut();
-        // Listener will handle redirect
+        localStorage.removeItem('demo_user_session');
+        window.location.href = 'login.html';
     },
 
     async fetchProfile() {
