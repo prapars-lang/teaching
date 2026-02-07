@@ -53,7 +53,7 @@ const auth = {
             const { error: profileError } = await appSupabaseClient.from('profiles').insert({
                 id: data.user.id,
                 role: role,
-                name: name
+                full_name: name
             });
             if (profileError) console.error('Profile creation failed:', profileError);
 
@@ -94,7 +94,7 @@ const auth = {
 
             // Update User Info Display
             if (userInfo) {
-                userInfo.textContent = `${this.profile?.name || this.user.email} (${this.profile?.role || 'User'})`;
+                userInfo.textContent = `${this.profile?.full_name || this.user.email} (${this.profile?.role || 'User'})`;
             }
 
             // Role Based Access Control
