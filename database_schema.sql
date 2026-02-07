@@ -27,6 +27,8 @@ create table teachers (
   email text,
   building text,
   max_periods int default 30,
+  skills jsonb default '[]', -- List of subject codes/types they can teach
+  unavailable_times jsonb default '[]', -- e.g. [{"day": "Tuesday", "period": 1}]
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 
@@ -39,6 +41,8 @@ create table subjects (
   teacher_name text, -- Storing name directly for prototype simplicity
   hours int default 1,
   lab text,
+  type text default 'Theory', -- 'Theory' or 'Lab'
+  required_room_type text, -- e.g., 'Computer', 'Science'
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 
@@ -47,6 +51,8 @@ create table classrooms (
   id uuid default uuid_generate_v4() primary key,
   classroom_name text not null,
   building_name text,
+  capacity int default 40,
+  type text default 'Normal', -- 'Normal', 'Computer', 'Science'
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 

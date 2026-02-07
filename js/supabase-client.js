@@ -2,7 +2,25 @@
 const SUPABASE_URL = 'https://yefpafuqjbdvkyiynziw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllZnBhZnVxamJkdmt5aXlueml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzc1NTksImV4cCI6MjA4NTk1MzU1OX0.QljXcAwYwkNYJjfBdmt9iIA5aHoFdZkU2MJXda7f4TU';
 
-const appSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Platform Client (for Login & Tenant Resolution)
+const platformClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Dynamic School Client (Initialized after login)
+let appSupabaseClient = platformClient; // Default to platform for initial load/debugging
+
+window.initSchoolClient = (schoolUrl, schoolKey) => {
+    console.log("Initializing School Client:", schoolUrl);
+    appSupabaseClient = window.supabase.createClient(schoolUrl, schoolKey);
+    return appSupabaseClient;
+};
+
+// Expose globally
+window.platformClient = platformClient;
+// window.appSupabaseClient is already exposed by let (but needs window assignment to be sure if using modules, here it's script tag)
+window.appSupabaseClient = appSupabaseClient;
+// Note: We need a getter or direct assignment to ensure app.js sees the *updated* client.
+// Better: app.js should use `window.appSupabaseClient` which we update here.
+
 
 // Data SDK Wrapper to match original interface somewhat but using Supabase
 const dataSdk = {

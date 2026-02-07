@@ -8,6 +8,7 @@
     <!-- Supabase & App Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-client.js?v=2"></script>
+    <script src="js/platform-mock.js?v=2"></script>
     <script src="js/auth.js?v=2"></script>
     <script src="js/app.js?v=2" defer></script>
 
@@ -277,9 +278,11 @@
                         onclick="showPage('teacher-detail-timetable')"
                         class="nav-tab px-3 py-2 text-sm whitespace-nowrap">👨🏫 ตารางรายครู</button> <button
                         onclick="showPage('teacher-timetable')" class="nav-tab px-3 py-2 text-sm whitespace-nowrap">📋
-                        รายละเอียดครู</button> <button onclick="showPage('substitute')"
-                        class="nav-tab px-3 py-2 text-sm whitespace-nowrap">🔄 สอนแทน</button> <button
-                        onclick="showPage('reports')" class="nav-tab px-3 py-2 text-sm whitespace-nowrap">📊
+                        รายละเอียดครู</button> <button onclick="showPage('classroom-timetable')"
+                        class="nav-tab px-3 py-2 text-sm whitespace-nowrap">🏫 ตารางห้องเรียน</button> <button
+                        onclick="showPage('substitute')" class="nav-tab px-3 py-2 text-sm whitespace-nowrap">🔄
+                        สอนแทน</button> <button onclick="showPage('reports')"
+                        class="nav-tab px-3 py-2 text-sm whitespace-nowrap">📊
                         รายงาน</button>
                 </nav>
             </div>
@@ -545,140 +548,178 @@
                         </table>
                     </div>
                 </div>
-            </div><!-- Substitute Page -->
-            <div id="page-substitute" class="page-view hidden">
-                <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Classroom Timetable Page -->
+                <div id="page-classroom-timetable" class="page-view hidden">
                     <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 class="text-2xl font-bold text-green-800 mb-6">🔄 บันทึกการสอนแทน</h2>
-                        <form id="substitute-form" class="space-y-4">
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">วันที่</label> <input
-                                    type="date" id="sub-date" required
+                        <h2 class="text-2xl font-bold text-green-800 mb-6">🏫 ตารางเรียนตามห้องเรียน</h2>
+                        <div class="mb-6 grid md:grid-cols-3 gap-4">
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-2">เลือกห้องเรียน</label>
+                                <select id="classroom-select"
                                     class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                            </div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">วัน</label> <select
-                                    id="sub-day" required
-                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                                    <option value="">-- เลือกวัน --</option>
-                                    <option value="จันทร์">วันจันทร์</option>
-                                    <option value="อังคาร">วันอังคาร</option>
-                                    <option value="พุธ">วันพุธ</option>
-                                    <option value="พฤหัสบดี">วันพฤหัสบดี</option>
-                                    <option value="ศุกร์">วันศุกร์</option>
+                                    <option value="">-- เลือกห้องเรียน --</option>
                                 </select>
                             </div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">คาบเรียน</label> <select
-                                    id="sub-period" required
-                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                                    <option value="">-- เลือกคาบ --</option>
-                                    <option value="1">คาบที่ 1</option>
-                                    <option value="2">คาบที่ 2</option>
-                                    <option value="3">คาบที่ 3</option>
-                                    <option value="4">คาบที่ 4</option>
-                                    <option value="5">คาบที่ 5</option>
-                                    <option value="6">คาบที่ 6</option>
-                                    <option value="7">คาบที่ 7</option>
-                                </select>
+                        </div>
+                        <div id="classroom-info"
+                            class="hidden mb-6 p-4 bg-purple-50 rounded-xl border-2 border-purple-200">
+                            <p class="text-sm"><strong>อาคาร:</strong> <span id="class-building-info">-</span></p>
+                            <p class="text-sm"><strong>จำนวนคาบเรียนรวม:</strong> <span
+                                    id="class-total-periods">0</span>
+                                คาบ/สัปดาห์</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-purple-600 text-white">
+                                        <th class="p-2 border border-purple-700 w-20">วัน</th>
+                                        <th class="p-2 border border-purple-700">08:00</th>
+                                        <th class="p-2 border border-purple-700">09:00</th>
+                                        <th class="p-2 border border-purple-700">10:00</th>
+                                        <th class="p-2 border border-purple-700">11:00</th>
+                                        <th class="p-2 border border-purple-700 bg-amber-500">12:00</th>
+                                        <th class="p-2 border border-purple-700">13:00</th>
+                                        <th class="p-2 border border-purple-700">14:00</th>
+                                        <th class="p-2 border border-purple-700">15:00</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="classroom-timetable-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- Substitute Page -->
+                <div id="page-substitute" class="page-view hidden">
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h2 class="text-2xl font-bold text-green-800 mb-6">🔄 บันทึกการสอนแทน</h2>
+                            <form id="substitute-form" class="space-y-4">
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-1">วันที่</label> <input
+                                        type="date" id="sub-date" required
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                </div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-1">วัน</label> <select
+                                        id="sub-day" required
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                        <option value="">-- เลือกวัน --</option>
+                                        <option value="จันทร์">วันจันทร์</option>
+                                        <option value="อังคาร">วันอังคาร</option>
+                                        <option value="พุธ">วันพุธ</option>
+                                        <option value="พฤหัสบดี">วันพฤหัสบดี</option>
+                                        <option value="ศุกร์">วันศุกร์</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-1">คาบเรียน</label>
+                                    <select id="sub-period" required
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                        <option value="">-- เลือกคาบ --</option>
+                                        <option value="1">คาบที่ 1</option>
+                                        <option value="2">คาบที่ 2</option>
+                                        <option value="3">คาบที่ 3</option>
+                                        <option value="4">คาบที่ 4</option>
+                                        <option value="5">คาบที่ 5</option>
+                                        <option value="6">คาบที่ 6</option>
+                                        <option value="7">คาบที่ 7</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-1">ครูที่ลา</label>
+                                    <select id="sub-leaving-teacher" required
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                        <option value="">-- เลือกครู --</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-1">เหตุผล</label>
+                                    <select id="sub-reason" required
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                        <option value="">-- เลือกเหตุผล --</option>
+                                        <option value="ลาป่วย">ลาป่วย</option>
+                                        <option value="ลากิจ">ลากิจ</option>
+                                        <option value="ไปราชการ">ไปราชการ</option>
+                                        <option value="ประชุม">ประชุม</option>
+                                        <option value="อบรม">อบรม/สัมมนา</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-1">ครูผู้สอนแทน</label>
+                                    <select id="sub-teacher" required
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                        <option value="">-- เลือกครูสอนแทน --</option>
+                                    </select>
+                                </div><button type="submit"
+                                    class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">✓
+                                    บันทึก</button>
+                            </form>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h2 class="text-2xl font-bold text-green-800 mb-6">📝 ประวัติการสอนแทนของครู</h2><select
+                                id="teacher-history-select"
+                                class="w-full px-4 py-2 mb-4 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                <option value="">-- เลือกครู --</option>
+                            </select>
+                            <div id="substitute-history" class="space-y-3 max-h-96 overflow-y-auto">
+                                <p class="text-center text-gray-500 py-8">ยังไม่มีประวัติ</p>
                             </div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">ครูที่ลา</label> <select
-                                    id="sub-leaving-teacher" required
-                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                                    <option value="">-- เลือกครู --</option>
-                                </select>
+                        </div>
+                    </div>
+                </div><!-- Reports Page -->
+                <div id="page-reports" class="page-view hidden">
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-xl font-bold text-green-800 mb-6">📥 ส่งออกข้อมูล</h3>
+                            <div class="space-y-3"><button onclick="exportToJSON()"
+                                    class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">📥
+                                    ส่งออก JSON</button> <button onclick="exportToCSV()"
+                                    class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">📥
+                                    ส่งออก CSV</button> <button onclick="printTimetable()"
+                                    class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">🖨️
+                                    พิมพ์ตารางสอน</button>
                             </div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">เหตุผล</label> <select
-                                    id="sub-reason" required
-                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                                    <option value="">-- เลือกเหตุผล --</option>
-                                    <option value="ลาป่วย">ลาป่วย</option>
-                                    <option value="ลากิจ">ลากิจ</option>
-                                    <option value="ไปราชการ">ไปราชการ</option>
-                                    <option value="ประชุม">ประชุม</option>
-                                    <option value="อบรม">อบรม/สัมมนา</option>
-                                </select>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-xl font-bold text-green-800 mb-6">📊 สรุปข้อมูล</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between p-2 border-b">
+                                    <span>ครูทั้งหมด</span><strong id="report-teachers">0</strong> คน
+                                </div>
+                                <div class="flex justify-between p-2 border-b">
+                                    <span>รายวิชา</span><strong id="report-subjects">0</strong> วิชา
+                                </div>
+                                <div class="flex justify-between p-2 border-b">
+                                    <span>ห้องเรียน</span><strong id="report-classrooms">0</strong> ห้อง
+                                </div>
+                                <div class="flex justify-between p-2 border-b">
+                                    <span>คาบสอน</span><strong id="report-periods">0</strong> คาบ
+                                </div>
+                                <div class="flex justify-between p-2">
+                                    <span>การสอนแทน</span><strong id="report-subs">0</strong> ครั้ง
+                                </div>
                             </div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-1">ครูผู้สอนแทน</label>
-                                <select id="sub-teacher" required
+                        </div>
+                    </div>
+                </div><!-- Settings Page -->
+                <div id="page-settings" class="page-view hidden">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 max-w-2xl mx-auto">
+                        <h2 class="text-2xl font-bold text-green-800 mb-6">⚙️ ตั้งค่าระบบ</h2>
+                        <form id="settings-form" class="space-y-6">
+                            <div><label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อโรงเรียน</label>
+                                <input type="text" id="set-school-name"
                                     class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                                    <option value="">-- เลือกครูสอนแทน --</option>
-                                </select>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-2">ปีการศึกษา</label>
+                                    <input type="text" id="set-academic-year" placeholder="2567"
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                </div>
+                                <div><label class="block text-sm font-semibold text-gray-700 mb-2">ภาคเรียน</label>
+                                    <select id="set-semester"
+                                        class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                                        <option value="1">ภาคเรียนที่ 1</option>
+                                        <option value="2">ภาคเรียนที่ 2</option>
+                                    </select>
+                                </div>
                             </div><button type="submit"
-                                class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">✓
+                                class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">💾
                                 บันทึก</button>
                         </form>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h2 class="text-2xl font-bold text-green-800 mb-6">📝 ประวัติการสอนแทนของครู</h2><select
-                            id="teacher-history-select"
-                            class="w-full px-4 py-2 mb-4 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                            <option value="">-- เลือกครู --</option>
-                        </select>
-                        <div id="substitute-history" class="space-y-3 max-h-96 overflow-y-auto">
-                            <p class="text-center text-gray-500 py-8">ยังไม่มีประวัติ</p>
-                        </div>
-                    </div>
                 </div>
-            </div><!-- Reports Page -->
-            <div id="page-reports" class="page-view hidden">
-                <div class="grid lg:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-green-800 mb-6">📥 ส่งออกข้อมูล</h3>
-                        <div class="space-y-3"><button onclick="exportToJSON()"
-                                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">📥
-                                ส่งออก JSON</button> <button onclick="exportToCSV()"
-                                class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">📥
-                                ส่งออก CSV</button> <button onclick="printTimetable()"
-                                class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">🖨️
-                                พิมพ์ตารางสอน</button>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-green-800 mb-6">📊 สรุปข้อมูล</h3>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between p-2 border-b">
-                                <span>ครูทั้งหมด</span><strong id="report-teachers">0</strong> คน
-                            </div>
-                            <div class="flex justify-between p-2 border-b">
-                                <span>รายวิชา</span><strong id="report-subjects">0</strong> วิชา
-                            </div>
-                            <div class="flex justify-between p-2 border-b">
-                                <span>ห้องเรียน</span><strong id="report-classrooms">0</strong> ห้อง
-                            </div>
-                            <div class="flex justify-between p-2 border-b">
-                                <span>คาบสอน</span><strong id="report-periods">0</strong> คาบ
-                            </div>
-                            <div class="flex justify-between p-2">
-                                <span>การสอนแทน</span><strong id="report-subs">0</strong> ครั้ง
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div><!-- Settings Page -->
-            <div id="page-settings" class="page-view hidden">
-                <div class="bg-white rounded-2xl shadow-lg p-6 max-w-2xl mx-auto">
-                    <h2 class="text-2xl font-bold text-green-800 mb-6">⚙️ ตั้งค่าระบบ</h2>
-                    <form id="settings-form" class="space-y-6">
-                        <div><label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อโรงเรียน</label> <input
-                                type="text" id="set-school-name"
-                                class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                        </div>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-2">ปีการศึกษา</label> <input
-                                    type="text" id="set-academic-year" placeholder="2567"
-                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                            </div>
-                            <div><label class="block text-sm font-semibold text-gray-700 mb-2">ภาคเรียน</label> <select
-                                    id="set-semester"
-                                    class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                                    <option value="1">ภาคเรียนที่ 1</option>
-                                    <option value="2">ภาคเรียนที่ 2</option>
-                                </select>
-                            </div>
-                        </div><button type="submit"
-                            class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">💾
-                            บันทึก</button>
-                    </form>
-                </div>
-            </div>
         </main><!-- Add Teacher Modal -->
         <div id="add-teacher-modal"
             class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">

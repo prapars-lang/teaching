@@ -31,7 +31,12 @@ async function initApp() {
     console.log("Initializing App...");
     showToast('กำลังโหลดข้อมูล...', 'info');
     await fetchData();
-    setupEventListeners();
+
+    if (!appState.hasListeners) {
+        setupEventListeners();
+        appState.hasListeners = true;
+    }
+
     updatePageTitle();
     renderAll();
     showToast('โหลดข้อมูลเรียบร้อย');
@@ -125,6 +130,7 @@ function renderAll() {
     renderSubjectPool();
     renderValidation();
     renderAnalysis();
+    renderClassroomTimetablePage();
     updateReportSummary();
 }
 
@@ -1119,3 +1125,77 @@ window.deleteClassroom = async function (id) {
         showToast('ลบห้องเรียนแล้ว');
     });
 };
+
+// --- CLASSROOM TIMETABLE ---
+function renderClassroomTimetablePage() {
+    const select = document.getElementById('classroom-select');
+    if (!select) return;
+
+    if (appState.allData.classrooms.length === 0) {
+        select.innerHTML = '<option value="">-- ไม่มีห้องเรียน --</option>';
+        return;
+    }
+
+    select.innerHTML = '<option value="">-- เลือกห้องเรียน --</option>' +
+        appState.allData.classrooms.map(c => `<option value="${c.classroom_name}">${c.classroom_name}</option>`).join('');
+
+    select.onchange = (e) => {
+        if (!e.target.value) {
+            document.getElementById('classroom-info').classList.add('hidden');
+            document.getElementById('classroom-timetable-tbody').innerHTML = '';
+            return;
+        }
+        updateClassroomTimetable(e.target.value);
+    };
+}
+
+function updateClassroomTimetable(classroomName) {
+    const tbody = document.getElementById('classroom-timetable-tbody');
+    const infoDiv = document.getElementById('classroom-info');
+    if (!tbody || !infoDiv) return;
+
+    const classroom = appState.allData.classrooms.find(c => c.classroom_name === classroomName);
+    const buildingInfo = classroom ? classroom.building_name : '-';
+    document.getElementById('class-building-info').textContent = buildingInfo || '-';
+
+    // Filter subjects for this classroom (grade)
+    // Note: subjects.grade usually maps to "M.1/1".
+    const subjectsInClass = appState.allData.subjects.filter(s => s.grade === classroomName);
+    const subjectIds = new Set(subjectsInClass.map(s => s.__backendId));
+
+    // Calculate total periods (this logic checks if subject is in this classroom)
+    // We should loop through the timetable and count periods where subject_id is in subjectIds
+    const periodsCount = appState.allData.timetable.filter(t => subjectIds.has(t.subject_id)).length;
+    document.getElementById('class-total-periods').textContent = periodsCount;
+
+    infoDiv.classList.remove('hidden');
+
+    tbody.innerHTML = days.map(day => `
+        <tr>
+          <td class="p-2 border border-purple-200 bg-purple-50 font-semibold text-purple-800 w-20">${day}</td>
+          ${periods.map(period => {
+        if (period === 'lunch') {
+            return `<td class="p-2 border border-purple-200 bg-amber-100 text-center font-semibold text-amber-700 text-sm">🍽️</td>`;
+        }
+
+        const entries = appState.allData.timetable.filter(t => t.day === day && t.period == period);
+        // Find if any entry belongs to a subject in this classroom
+        const classEntry = entries.find(e => subjectIds.has(e.subject_id));
+
+        const content = classEntry
+            ? (() => {
+                const subject = appState.allData.subjects.find(s => s.__backendId === classEntry.subject_id);
+                return subject ? `
+                    <div class="p-2 bg-purple-100 border border-purple-300 rounded h-full text-xs">
+                      <p class="font-semibold text-purple-900">${subject.name}</p>
+                      <p class="text-purple-700">${subject.teacher_name || '-'}</p>
+                    </div>
+                  ` : '';
+            })()
+            : '';
+
+        return `<td class="period-slot" data-day="${day}" data-period="${period}">${content}</td>`;
+    }).join('')}
+        </tr>
+    `).join('');
+}

@@ -2,22 +2,29 @@
 const auth = {
     user: null,
     profile: null,
+    currentSchool: null,
 
     async init() {
-        const { data: { session } } = await appSupabaseClient.auth.getSession();
+        // 1. Authenticate with Platform
+        const { data: { session } } = await platformClient.auth.getSession();
+
         if (session?.user) {
             this.user = session.user;
-            await this.fetchProfile();
+            await this.connectToSchool();
         }
 
-        // Auth State Listener
-        appSupabaseClient.auth.onAuthStateChange(async (event, session) => {
+        // Auth State Listener (Platform)
+        platformClient.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
                 this.user = session.user;
-                await this.fetchProfile();
+                await this.connectToSchool();
             } else {
                 this.user = null;
                 this.profile = null;
+                this.currentSchool = null;
+                // Reset to specific client null or default? 
+                // Currently appSupabaseClient resets to platform via reload usually, 
+                // but here we might want to reload page on logout.
             }
             this.updateUI();
         });
@@ -25,8 +32,38 @@ const auth = {
         this.updateUI();
     },
 
+    async connectToSchool() {
+        if (!this.user) return;
+
+        // 2. Resolve School
+        const schools = await PlatformService.resolveUserSchools(this.user.email);
+        if (schools.length === 0) {
+            alert('No school found for this user.');
+            await this.logout();
+            return;
+        }
+
+        // For prototype, auto-select first school
+        const school = schools[0];
+        this.currentSchool = school;
+        console.log(`Resource Resolved: ${school.name}`);
+
+        // 3. Initialize School DB Connection
+        // This updates the global 'appSupabaseClient' used by app.js and dataSdk
+        initSchoolClient(school.db_config.url, school.db_config.key);
+
+        // 4. Load Profile from School DB
+        await this.fetchProfile();
+
+        // 5. Initialize App Logic (if getting data)
+        if (window.initApp) {
+            // Reset listeners flag if strictly needed, or reliance on reload
+            // If switching users without reload, we might need to reset appState
+        }
+    },
+
     async login(email, password) {
-        const { data, error } = await appSupabaseClient.auth.signInWithPassword({ email, password });
+        const { data, error } = await platformClient.auth.signInWithPassword({ email, password });
         if (error) {
             alert('Login failed: ' + error.message);
             return false;
@@ -35,11 +72,12 @@ const auth = {
     },
 
     async register(email, password, role = 'teacher', name = '') {
-        const { data, error } = await appSupabaseClient.auth.signUp({
+        // Register on Platform
+        const { data, error } = await platformClient.auth.signUp({
             email,
             password,
             options: {
-                data: { display_name: name, role: role } // Metadata
+                data: { display_name: name, role: role }
             }
         });
 
@@ -49,14 +87,6 @@ const auth = {
         }
 
         if (data.user) {
-            // Create Profile
-            const { error: profileError } = await appSupabaseClient.from('profiles').insert({
-                id: data.user.id,
-                role: role,
-                full_name: name
-            });
-            if (profileError) console.error('Profile creation failed:', profileError);
-
             alert('Registration successful! You can now login.');
             return true;
         }
@@ -64,19 +94,17 @@ const auth = {
     },
 
     async logout() {
-        await appSupabaseClient.auth.signOut();
+        await platformClient.auth.signOut();
         window.location.reload();
     },
 
     async fetchProfile() {
         if (!this.user) return;
         try {
+            // This query runs against the SCHOOL DB (appSupabaseClient)
             const { data, error } = await appSupabaseClient.from('profiles').select('*').eq('id', this.user.id).maybeSingle();
             if (data) {
                 this.profile = data;
-            } else if (!error) {
-                // If no profile exists (e.g. manual creation), try to infer or create logic? 
-                // For now, assume teacher if not found or restricted.
             }
         } catch (e) {
             console.error(e);
@@ -84,40 +112,27 @@ const auth = {
     },
 
     updateUI() {
-        // IDs matched to new index.html
         const loginModal = document.getElementById('login-modal');
         const appContent = document.getElementById('app');
         const userInfo = document.getElementById('user-display-name');
 
-        if (this.user) {
+        if (this.user && this.currentSchool) {
             if (loginModal) loginModal.classList.add('hidden');
             if (appContent) {
                 appContent.classList.remove('hidden');
-                // Trigger Data Load if not already loaded? 
-                // Better to call it only once or check if appState is empty?
-                // initApp checks for data, or we can just call it (it fetches). 
-                // Logic: initialization is separate from just showing UI. 
-                if (window.initApp) {
-                    // Check if data is loaded to avoid double fetch on re-auth? 
-                    // appState is global. 
-                    if (appState.allData.teachers.length === 0 && appState.allData.subjects.length === 0) {
-                        window.initApp();
-                    } else {
-                        // Just render if data exists
-                        // window.renderAll(); 
-                    }
+
+                // Initialize Data if not loaded
+                if (window.initApp && (appState.allData.teachers.length === 0 && appState.allData.subjects.length === 0)) {
+                    window.initApp();
                 }
             }
 
-            // Update User Info Display
             if (userInfo) {
-                userInfo.textContent = `${this.profile?.full_name || this.user.email} (${this.profile?.role || 'User'})`;
+                userInfo.textContent = `${this.profile?.full_name || this.user.email} (${this.currentSchool.name})`;
             }
 
             // Role Based Access Control
             const role = this.profile?.role || 'teacher';
-
-            // Admin Only Elements
             document.querySelectorAll('.admin-only').forEach(el => {
                 if (role === 'admin') {
                     el.classList.remove('hidden');
