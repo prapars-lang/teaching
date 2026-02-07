@@ -28,8 +28,11 @@ function renderTeachersTable() {
           <td class="px-4 py-3 text-gray-600">${t.max_periods || '-'}</td>
           <td class="px-4 py-3 text-sm text-gray-500">${t.unavailable_times?.length ? t.unavailable_times.map(u => u.text).join(', ') : '-'}</td>
           <td class="px-4 py-3 text-center">
-            <button onclick="deleteTeacher('${t.__backendId}')" class="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200">
-                🗑️ ลบ
+            <a href="teacher-detail.html?id=${t.__backendId}" class="inline-block px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-200 mr-1" title="ดูรายละเอียด">
+                📄
+            </a>
+            <button onclick="deleteTeacher('${t.__backendId}')" class="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200" title="ลบข้อมูล">
+                🗑️
             </button>
           </td>
         </tr>
