@@ -71,7 +71,7 @@ const auth = {
     async fetchProfile() {
         if (!this.user) return;
         try {
-            const { data, error } = await appSupabaseClient.from('profiles').select('*').eq('id', this.user.id).single();
+            const { data, error } = await appSupabaseClient.from('profiles').select('*').eq('id', this.user.id).maybeSingle();
             if (data) {
                 this.profile = data;
             } else if (!error) {
