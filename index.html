@@ -10,6 +10,8 @@
     <script src="js/supabase-client.js?v=2"></script>
     <script src="js/platform-mock.js?v=2"></script>
     <script src="js/auth.js?v=2"></script>
+    <script src="js/constraints.js?v=2"></script>
+    <script src="js/scheduler.js?v=2"></script>
     <script src="js/app.js?v=2" defer></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -257,7 +259,7 @@
                     <div class="flex items-center gap-2">
                         <span id="user-display-name"
                             class="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">User</span>
-                        <button onclick="logout()"
+                        <button onclick="auth.logout()"
                             class="px-3 py-1 bg-red-500/80 hover:bg-red-600 text-white text-sm rounded-lg transition-colors">ออกจากระบบ</button>
                         <button onclick="showPage('settings')"
                             class="px-4 py-2 bg-green-700 hover:bg-green-800 rounded-lg font-medium transition-colors">⚙️
@@ -361,9 +363,9 @@
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">ชื่อครู</th>
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">กลุ่มสาระ</th>
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">เบอร์โทร</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-green-800">อีเมล</th>
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">อาคาร</th>
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">คาบ/สัปดาห์</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ช่วงเวลาไม่สะดวก</th>
                                     <th class="px-4 py-3 text-center font-semibold text-green-800">จัดการ</th>
                                 </tr>
                             </thead>
@@ -394,7 +396,8 @@
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">ชั้นเรียน</th>
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">ครูประจำ</th>
                                     <th class="px-4 py-3 text-left font-semibold text-green-800">ชม./สัปดาห์</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ห้องปฏิบัติการ</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ประเภทวิชา</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-green-800">ประเภทห้อง</th>
                                     <th class="px-4 py-3 text-center font-semibold text-green-800">จัดการ</th>
                                 </tr>
                             </thead>
@@ -422,7 +425,12 @@
             </div><!-- Timetable Page -->
             <div id="page-timetable" class="page-view hidden">
                 <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 class="text-2xl font-bold text-green-800 mb-6">📅 ตารางสอนประจำสัปดาห์</h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-green-800">📅 ตารางสอนประจำสัปดาห์</h2>
+                        <button onclick="autoSchedule()"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-md transition-all hover:scale-105 active:scale-95">✨
+                            จัดตารางอัตโนมัติ</button>
+                    </div>
                     <div class="mb-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
                         <p class="text-sm text-green-700 font-medium mb-3">📌 ลากรายวิชาจากพูลด้านล่างมาวางในคาบสอน</p>
                         <div id="subject-pool" class="flex flex-wrap gap-3"></div>
@@ -747,17 +755,16 @@
                             type="tel" id="teacher-phone" placeholder="0812345678"
                             class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
                     </div>
-                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">อีเมล</label> <input type="email"
-                            id="teacher-email" placeholder="example@school.com"
-                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                    </div>
-                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">อาคาร</label> <input type="text"
-                            id="teacher-building" placeholder="เช่น อาคาร ก"
-                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                    </div>
                     <div><label class="block text-sm font-semibold text-gray-700 mb-1">คาบ/สัปดาห์ สูงสุด</label> <input
                             type="number" id="teacher-max-periods" min="1" max="50" placeholder="30"
                             class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">ช่วงเวลาที่ไม่สะดวก
+                            (Unavailable)</label>
+                        <input type="text" id="teacher-unavailable"
+                            placeholder='เช่น จันทร์-1, อังคาร-บ่าย (ระบุเป็น text ชั่วคราว)'
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                        <p class="text-xs text-gray-500 mt-1">* ระบบจะนำไปคำนวณอัตโนมัติในเฟสถัดไป</p>
                     </div>
                     <div class="flex gap-3"><button type="button" onclick="closeAddTeacherModal()"
                             class="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium">ยกเลิก</button>
@@ -780,6 +787,22 @@
                             type="text" id="subject-name" required placeholder="เช่น คณิตศาสตร์"
                             class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
                     </div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">ประเภทวิชา</label>
+                        <select id="subject-type" required
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                            <option value="Theory">ทฤษฎี (Theory)</option>
+                            <option value="Lab">ปฏิบัติ (Lab)</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">ประเภทห้องที่ต้องการ</label>
+                        <select id="subject-room-type"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                            <option value="">-- ไม่ระบุ --</option>
+                            <option value="Normal">ห้องเรียนทั่วไป</option>
+                            <option value="Science">ห้องวิทย์</option>
+                            <option value="Computer">ห้องคอมพิวเตอร์</option>
+                        </select>
+                    </div>
                     <div><label class="block text-sm font-semibold text-gray-700 mb-1">ชั้นเรียน</label> <input
                             type="text" id="subject-grade" required placeholder="เช่น ม.1/1"
                             class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
@@ -790,10 +813,6 @@
                     </div>
                     <div><label class="block text-sm font-semibold text-gray-700 mb-1">ชั่วโมง/สัปดาห์</label> <input
                             type="number" id="subject-hours" min="1" max="10" placeholder="4"
-                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
-                    </div>
-                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">ห้องปฏิบัติการ (ถ้ามี)</label>
-                        <input type="text" id="subject-lab" placeholder="เช่น ห้องปฏิบัติการวิทยาศาสตร์"
                             class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
                     </div>
                     <div class="flex gap-3"><button type="button" onclick="closeAddSubjectModal()"
@@ -816,6 +835,18 @@
                     <div><label class="block text-sm font-semibold text-gray-700 mb-1">อาคาร</label> <input type="text"
                             id="classroom-building" placeholder="เช่น อาคาร ก"
                             class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">ความจุ (คน)</label> <input
+                            type="number" id="classroom-capacity" placeholder="40" value="40"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                    </div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">ประเภทห้อง</label>
+                        <select id="classroom-type"
+                            class="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none">
+                            <option value="Normal">ห้องเรียนทั่วไป</option>
+                            <option value="Science">ห้องวิทย์</option>
+                            <option value="Computer">ห้องคอมพิวเตอร์</option>
+                        </select>
                     </div>
                     <div class="flex gap-3"><button type="button" onclick="closeAddClassroomModal()"
                             class="flex-1 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium">ยกเลิก</button>

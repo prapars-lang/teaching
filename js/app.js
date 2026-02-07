@@ -423,9 +423,9 @@ function renderTeachersTable() {
           <td class="px-4 py-3">${t.name}</td>
           <td class="px-4 py-3">${t.department || '-'}</td>
           <td class="px-4 py-3">${t.phone || '-'}</td>
-          <td class="px-4 py-3">${t.email || '-'}</td>
           <td class="px-4 py-3">${t.building || '-'}</td>
           <td class="px-4 py-3">${t.max_periods || '-'}</td>
+          <td class="px-4 py-3 text-sm text-gray-600">${t.unavailable_times?.length ? t.unavailable_times.map(u => u.text).join(', ') : '-'}</td>
           <td class="px-4 py-3 text-center">
             <button onclick="deleteTeacher('${t.__backendId}')" class="px-3 py-1 text-red-600 hover:bg-red-100 rounded">🗑️</button>
           </td>
@@ -457,7 +457,8 @@ function renderSubjectsTable() {
           <td class="px-4 py-3">${s.grade}</td>
           <td class="px-4 py-3">${s.teacher_name}</td>
           <td class="px-4 py-3">${s.hours || '-'}</td>
-          <td class="px-4 py-3">${s.lab || '-'}</td>
+          <td class="px-4 py-3">${s.type === 'Lab' ? 'ปฏิบัติ (Lab)' : 'ทฤษฎี'}</td>
+          <td class="px-4 py-3">${s.required_room_type || '-'}</td>
           <td class="px-4 py-3 text-center">
             <button onclick="deleteSubject('${s.__backendId}')" class="px-3 py-1 text-red-600 hover:bg-red-100 rounded">🗑️</button>
           </td>
@@ -476,13 +477,17 @@ function renderClassroomsGrid() {
     }
 
     grid.innerHTML = appState.allData.classrooms.map(c => `
-        <div class="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+        <div class="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex justify-between items-start">
             <div>
-              <h4 class="font-bold text-blue-800">ห้อง ${c.classroom_name}</h4>
-              <p class="text-sm text-blue-600">🏢 ${c.building_name || 'ไม่ระบุ'}</p>
+              <h4 class="font-bold text-lg text-blue-800">ห้อง ${c.classroom_name}</h4>
+              <p class="text-sm text-blue-600 mt-1">🏢 ${c.building_name || 'ไม่ระบุ'}</p>
+              <div class="flex gap-2 mt-2">
+                <span class="px-2 py-0.5 bg-blue-200 text-blue-800 text-xs rounded-full">👥 ${c.capacity || 40}</span>
+                <span class="px-2 py-0.5 bg-cyan-200 text-cyan-800 text-xs rounded-full">🔠 ${c.type || 'ทั่วไป'}</span>
+              </div>
             </div>
-            <button onclick="deleteClassroom('${c.__backendId}')" class="text-blue-500 hover:text-red-600">🗑️</button>
+            <button onclick="deleteClassroom('${c.__backendId}')" class="text-blue-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50">🗑️</button>
           </div>
         </div>
     `).join('');
@@ -492,14 +497,20 @@ function renderClassroomsGrid() {
 function renderSubjectPool() {
     const pool = document.getElementById('subject-pool');
     if (!pool) return;
+    const filterGrade = document.getElementById('timetable-filter-grade')?.value;
     const usedIds = new Set(appState.allData.timetable.map(t => t.subject_id));
 
-    if (appState.allData.subjects.length === 0) {
-        pool.innerHTML = '<p class="text-gray-500 text-sm italic">ยังไม่มีรายวิชา</p>';
+    let filteredSubjects = appState.allData.subjects;
+    if (filterGrade) {
+        filteredSubjects = filteredSubjects.filter(s => s.grade === filterGrade);
+    }
+
+    if (filteredSubjects.length === 0) {
+        pool.innerHTML = '<p class="text-gray-500 text-sm italic">ไม่มีรายวิชา' + (filterGrade ? 'สำหรับชั้นนี้' : '') + '</p>';
         return;
     }
 
-    pool.innerHTML = appState.allData.subjects.map(s => `
+    pool.innerHTML = filteredSubjects.map(s => `
         <div class="draggable-card px-4 py-3 rounded-lg font-medium text-white cursor-grab active:cursor-grabbing"
              style="background: ${usedIds.has(s.__backendId) ? '#ccc' : 'linear-gradient(135deg, #16a34a, #15803d)'}"
              data-subject-id="${s.__backendId}"
@@ -507,14 +518,27 @@ function renderSubjectPool() {
              ondragstart="window.handleDragStart(event)"
              ondragend="window.handleDragEnd(event)">
           <p class="font-semibold text-sm">${s.name}</p>
-          <p class="text-xs opacity-90">${s.teacher_name}</p>
+          <p class="text-xs opacity-90">${s.teacher_name} (${s.grade})</p>
         </div>
     `).join('');
 }
 
 function renderTimetable() {
     const tbody = document.getElementById('timetable-tbody');
+    const filterSelect = document.getElementById('timetable-filter-grade');
     if (!tbody) return;
+
+    // Populate Filter if empty (and if data exists)
+    if (filterSelect && filterSelect.options.length <= 1 && appState.allData.subjects.length > 0) {
+        const grades = [...new Set(appState.allData.subjects.map(s => s.grade).filter(Boolean))].sort();
+        if (grades.length > 0) {
+            filterSelect.innerHTML = '<option value="">-- ทุกชั้นเรียน --</option>' +
+                grades.map(g => `<option value="${g}">${g}</option>`).join('');
+        }
+    }
+
+    const filterGrade = filterSelect?.value;
+
     tbody.innerHTML = days.map(day => `
         <tr>
           <td class="p-2 border border-gray-200 bg-green-50 font-semibold text-green-800 w-20">${day}</td>
@@ -523,14 +547,24 @@ function renderTimetable() {
             return `<td class="p-2 border border-gray-200 bg-amber-100 text-center font-semibold text-amber-700 text-sm">🍽️</td>`;
         }
 
-        const entry = appState.allData.timetable.find(t => t.day === day && t.period == period);
+        // Find entry for this slot
+        const entry = appState.allData.timetable.find(t => {
+            if (t.day !== day || t.period != period) return false;
+            if (!filterGrade) return true; // If no filter, show first match (might overlap visually)
+
+            // Check if subject matches filter
+            const subj = appState.allData.subjects.find(s => s.__backendId === t.subject_id);
+            return subj && subj.grade === filterGrade;
+        });
+
         const content = entry
             ? (() => {
                 const subject = appState.allData.subjects.find(s => s.__backendId === entry.subject_id);
                 return subject ? `
                     <div class="p-2 bg-blue-100 border border-blue-300 rounded h-full text-xs">
                       <p class="font-semibold text-blue-900">${subject.name}</p>
-                      <p class="text-blue-700">${subject.code}</p>
+                      <p class="text-blue-700">${subject.code} (${subject.grade})</p>
+                      <p class="text-gray-600 text-[10px]">${subject.teacher_name}</p>
                     </div>
                   ` : '';
             })()
@@ -546,6 +580,39 @@ function renderTimetable() {
         </tr>
     `).join('');
 }
+
+window.autoSchedule = async () => {
+    if (!window.Scheduler) {
+        showToast('Scheduler module not loaded', 'error');
+        return;
+    }
+
+    showToast('กำลังจัดตารางสอนอัตโนมัติ...', 'info');
+
+    // Tiny delay to let UI update
+    await new Promise(r => setTimeout(r, 100));
+
+    try {
+        const result = await window.Scheduler.autoSchedule(appState.allData);
+
+        if (result.success && result.scheduled.length > 0) {
+            // Bulk insert
+            const { data, error } = await appSupabaseClient.from('timetable').insert(result.scheduled).select();
+            if (error) throw error;
+
+            // Update local state
+            const newEntries = data.map(d => ({ ...d, __backendId: d.id, type: 'timetable' }));
+            appState.allData.timetable.push(...newEntries);
+
+            renderAll();
+            showToast(`จัดตารางสำเร็จ ${result.scheduled.length} รายการ`, 'success');
+        } else {
+            showToast(result.message || 'ไม่พบรายวิชาที่ต้องจัดเพิ่ม', 'warning');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+};
 
 // Drag & Drop Handlers (Global)
 window.handleDragStart = function (e) {
@@ -580,6 +647,16 @@ window.handleDrop = async function (e) {
     if (appState.allData.timetable.some(t => t.day === day && t.period == period)) {
         showToast('คาบนี้มีรายวิชาแล้ว', 'error');
         return;
+    }
+
+    // Validate Constraints
+    if (window.Constraints) {
+        const tempSlot = { day, period, subject_id: draggedSubjectId };
+        const validation = window.Constraints.validateSlot(appState.allData, tempSlot);
+        if (!validation.valid) {
+            showToast(validation.error, 'error');
+            return;
+        }
     }
 
     try {
@@ -947,6 +1024,7 @@ function setupEventListeners() {
     });
 
     // Add Teacher
+
     document.getElementById('add-teacher-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
@@ -954,10 +1032,19 @@ function setupEventListeners() {
                 name: document.getElementById('teacher-name').value,
                 department: document.getElementById('teacher-department').value,
                 phone: document.getElementById('teacher-phone').value,
-                email: document.getElementById('teacher-email').value,
+                // email removed from form in previous step ?? wait, I saw email in the code I viewed
+                // Let's re-read the code I viewer. Line 957: email: document.getElementById('teacher-email').value,
+                // BUT in my index.html edit I REMOVED email input? 
+                // Ah, I see I removed email input in my previous edit to index.html to make room for unavailable? 
+                // No, I think I replaced it. Let me check the index.html content again if I can.
+                // Wait, looking at my index.html edit:
+                // -                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">อีเมล</label> <input type="email"
+                // -                            id="teacher-email" placeholder="example@school.com"
+                // So yes, I removed email. I should probably keep it or remove it from here.
+                // I'll remove it from here to match UI.
                 building: document.getElementById('teacher-building').value,
-                max_periods: parseInt(document.getElementById('teacher-max-periods').value) || 30
-                // created_at handled by Supabase
+                max_periods: parseInt(document.getElementById('teacher-max-periods').value) || 30,
+                unavailable_times: document.getElementById('teacher-unavailable').value ? [{ text: document.getElementById('teacher-unavailable').value }] : []
             };
 
             const { data, error } = await appSupabaseClient.from('teachers').insert([newTeacher]).select().single();
@@ -982,7 +1069,12 @@ function setupEventListeners() {
                 grade: document.getElementById('subject-grade').value,
                 teacher_name: document.getElementById('subject-teacher').value,
                 hours: parseInt(document.getElementById('subject-hours').value) || 1,
-                lab: document.getElementById('subject-lab').value
+                // lab removed? No, I see it in index.html diff? 
+                // -                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">ห้องปฏิบัติการ (ถ้ามี)</label>
+                // -                        <input type="text" id="subject-lab" placeholder="เช่น ห้องปฏิบัติการวิทยาศาสตร์"
+                // Yes, I removed subject-lab input and replaced with dropdowns.
+                type: document.getElementById('subject-type').value,
+                required_room_type: document.getElementById('subject-room-type').value || null
             };
 
             const { data, error } = await appSupabaseClient.from('subjects').insert([newSubject]).select().single();
@@ -1003,7 +1095,9 @@ function setupEventListeners() {
         try {
             const newClassroom = {
                 classroom_name: document.getElementById('classroom-name').value,
-                building_name: document.getElementById('classroom-building').value
+                building_name: document.getElementById('classroom-building').value,
+                capacity: parseInt(document.getElementById('classroom-capacity').value) || 40,
+                type: document.getElementById('classroom-type').value
             };
 
             const { data, error } = await appSupabaseClient.from('classrooms').insert([newClassroom]).select().single();
@@ -1017,6 +1111,7 @@ function setupEventListeners() {
             showToast('Error: ' + err.message, 'error');
         }
     });
+
 
     // Substitute Form
     document.getElementById('substitute-form')?.addEventListener('submit', async (e) => {
