@@ -91,6 +91,7 @@ function renderAll() {
     renderSubjectPool();
     renderValidation();
     renderAnalysis();
+    renderTeacherDetailsList();
     updateReportSummary();
 }
 
@@ -590,6 +591,99 @@ function updateTeacherDropdowns() {
             appState.allData.teachers.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
     });
 }
+
+// Teacher Details Page Logic
+function renderTeacherDetailsList() {
+    const container = document.getElementById('teacher-details-list');
+    if (!container) return; // Guard clause
+
+    const search = (document.getElementById('search-teacher-details')?.value || '').toLowerCase();
+
+    // Sort teachers by name
+    let teachers = appState.allData.teachers.sort((a, b) => a.name.localeCompare(b.name));
+
+    if (search) {
+        teachers = teachers.filter(t => t.name.toLowerCase().includes(search));
+    }
+
+    if (teachers.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center text-xs py-4">ไม่พบข้อมูล</p>';
+        return;
+    }
+
+    container.innerHTML = teachers.map(t => `
+        <div onclick="showTeacherDetail('${t.__backendId}')" 
+             class="p-3 bg-white border hover:bg-green-50 rounded-lg cursor-pointer transition shadow-sm group">
+            <div class="font-bold text-gray-800 text-sm group-hover:text-green-700">${t.name}</div>
+            <div class="text-xs text-gray-500">${t.department || '-'}</div>
+        </div>
+    `).join('');
+
+    // Auto-search binding
+    const searchInput = document.getElementById('search-teacher-details');
+    if (searchInput) {
+        searchInput.onkeyup = renderTeacherDetailsList;
+    }
+}
+
+window.showTeacherDetail = function (id) {
+    const teacher = appState.allData.teachers.find(t => t.__backendId === id);
+    const view = document.getElementById('teacher-details-view');
+    if (!teacher || !view) return;
+
+    // Calculate generic stats
+    const subjects = appState.allData.subjects.filter(s => s.teacher_name === teacher.name);
+    const totalHours = subjects.reduce((sum, s) => sum + (s.hours || 0), 0);
+    const classes = subjects.map(s => s.grade).join(', ');
+
+    view.innerHTML = `
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-800 text-green-700">${teacher.name}</h3>
+                <p class="text-gray-500 font-medium">${teacher.department || 'ไม่ระบุกลุ่มสาระ'}</p>
+            </div>
+            <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                ครู
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">เบอร์โทร</p>
+                <p class="font-bold">${teacher.phone || '-'}</p>
+            </div>
+             <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">อีเมล</p>
+                <p class="font-bold">${teacher.email || '-'}</p>
+            </div>
+             <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">อาคาร/ห้องพักครู</p>
+                <p class="font-bold">${teacher.building || '-'}</p>
+            </div>
+             <div class="p-4 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-1">ภาระงานสอน</p>
+                <p class="font-bold text-green-600">${totalHours} คาบ/สัปดาห์ (Max: ${teacher.max_periods})</p>
+            </div>
+        </div>
+
+        <h4 class="font-bold text-gray-700 mb-3 border-b pb-2">📚 รายวิชาที่สอน</h4>
+        <div class="space-y-2 mb-6">
+            ${subjects.length > 0 ? subjects.map(s => `
+                <div class="flex justify-between p-2 hover:bg-gray-50 rounded border-b border-gray-100">
+                    <span>${s.code} ${s.name}</span>
+                    <span class="text-gray-500 text-sm">${s.grade} (${s.hours} ชม.)</span>
+                </div>
+            `).join('') : '<p class="text-gray-400 italic">ยังไม่มีรายวิชา</p>'}
+        </div>
+        
+        <div class="mt-4 pt-4 border-t">
+             <button onclick="showPage('teacher-timetable'); setTimeout(() => { document.getElementById('teacher-select').value = '${teacher.name}'; updateTeacherTimetableView('${teacher.name}'); }, 100)" 
+                class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm">
+                ดูตารางสอนของครูท่านนี้ ➡️
+            </button>
+        </div>
+    `;
+};
 
 // Exports
 window.exportToJSON = () => {
