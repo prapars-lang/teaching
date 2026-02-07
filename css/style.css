@@ -1,0 +1,21 @@
+
+    body { box-sizing: border-box; font-family: 'Sarabun', sans-serif; }
+    html, body { height: 100%; }
+    .app-wrapper { height: 100%; width: 100%; overflow: hidden; }
+    .toast-message { animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 2.7s forwards; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { from { opacity: 1; } to { opacity: 0; } }
+    .modal-backdrop { animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .nav-tab { position: relative; transition: all 0.3s ease; }
+    .nav-tab.active { color: #16a34a; border-bottom: 3px solid #16a34a; }
+    .stat-box { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-left: 4px solid #16a34a; }
+    .alert-box { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .draggable-card { cursor: grab; transition: all 0.2s ease; }
+    .draggable-card:hover { transform: scale(1.05); box-shadow: 0 8px 16px rgba(22, 163, 74, 0.3); }
+    .drop-zone { border: 2px dashed #d1d5db; border-radius: 12px; min-height: 80px; transition: all 0.2s ease; }
+    .drop-zone.drag-over { border-color: #16a34a; background-color: #f0fdf4; }
+    .period-slot { min-height: 100px; background: #fafafa; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; transition: all 0.2s ease; }
+    .period-slot:hover { background: #f0fdf4; border-color: #16a34a; }
+    @view-transition { navigation: auto; }
