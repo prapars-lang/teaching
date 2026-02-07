@@ -51,3 +51,4 @@ const PlatformService = {
 };
 
 window.PlatformService = PlatformService;
+console.log("PlatformMock Loaded, PlatformService:", window.PlatformService);

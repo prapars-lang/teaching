@@ -66,7 +66,7 @@ const auth = {
         if (!this.user) return;
 
         // 2. Resolve School
-        const schools = await PlatformService.resolveUserSchools(this.user.email);
+        const schools = await window.PlatformService.resolveUserSchools(this.user.email);
         if (schools.length === 0) {
             alert('No school found for this user.');
             await this.logout();
