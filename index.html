@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,19 +8,24 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@600;700&display=swap"
+        rel="stylesheet">
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="bg-gradient-to-br from-green-50 via-white to-emerald-50 h-full overflow-hidden font-sarabun">
 
     <!-- Login Screen -->
-    <div id="login-screen" class="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 flex items-center justify-center transition-opacity duration-300">
+    <div id="login-screen"
+        class="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 flex items-center justify-center transition-opacity duration-300">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">📅</div>
+                <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">
+                    📅</div>
                 <h2 class="text-2xl font-bold text-green-800">ระบบจัดตารางสอน Pro</h2>
                 <p class="text-gray-500">กรุณาเข้าสู่ระบบเพื่อใช้งาน</p>
             </div>
@@ -27,30 +33,40 @@
             <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
-                    <input type="email" id="login-email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required placeholder="admin@school.com">
+                    <input type="email" id="login-email"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        required placeholder="admin@school.com">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
-                    <input type="password" id="login-password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none" required placeholder="••••••••">
+                    <input type="password" id="login-password"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                        required placeholder="••••••••">
                 </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">เข้าสู่ระบบ</button>
+                <button type="submit"
+                    class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">เข้าสู่ระบบ</button>
             </form>
 
             <div class="mt-6 pt-6 border-t border-gray-100">
-                <button onclick="document.getElementById('register-section').classList.toggle('hidden')" class="text-sm text-green-600 hover:text-green-800 font-medium w-full text-center">
+                <button onclick="document.getElementById('register-section').classList.toggle('hidden')"
+                    class="text-sm text-green-600 hover:text-green-800 font-medium w-full text-center">
                     ลงทะเบียนผู้ดูแลระบบใหม่ (สำหรับครั้งแรก)
                 </button>
-                
+
                 <div id="register-section" class="hidden mt-4 space-y-3 bg-gray-50 p-4 rounded-lg">
                     <h3 class="text-sm font-bold text-gray-700">ลงทะเบียนบัญชีใหม่</h3>
-                    <input type="email" id="reg-email" placeholder="อีเมลใหม่" class="w-full px-3 py-2 border rounded text-sm">
-                    <input type="password" id="reg-password" placeholder="รหัสผ่านใหม่" class="w-full px-3 py-2 border rounded text-sm">
-                    <input type="text" id="reg-name" placeholder="ชื่อ-สกุล" class="w-full px-3 py-2 border rounded text-sm">
+                    <input type="email" id="reg-email" placeholder="อีเมลใหม่"
+                        class="w-full px-3 py-2 border rounded text-sm">
+                    <input type="password" id="reg-password" placeholder="รหัสผ่านใหม่"
+                        class="w-full px-3 py-2 border rounded text-sm">
+                    <input type="text" id="reg-name" placeholder="ชื่อ-สกุล"
+                        class="w-full px-3 py-2 border rounded text-sm">
                     <select id="reg-role" class="w-full px-3 py-2 border rounded text-sm">
                         <option value="admin">Admin (ผู้ดูแลระบบ)</option>
                         <option value="teacher">Teacher (ครู)</option>
                     </select>
-                    <button onclick="handleRegister()" class="w-full bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700">ยืนยันการลงทะเบียน</button>
+                    <button onclick="handleRegister()"
+                        class="w-full bg-blue-600 text-white py-2 rounded text-sm hover:bg-blue-700">ยืนยันการลงทะเบียน</button>
                 </div>
             </div>
         </div>
@@ -63,7 +79,8 @@
             <div class="px-4 py-3">
                 <div class="flex justify-between items-center mb-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                        <div
+                            class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center backdrop-blur-sm">
                             <span class="text-2xl">📅</span>
                         </div>
                         <div>
@@ -75,10 +92,14 @@
                         <div class="text-right hidden sm:block mr-2">
                             <p id="user-info-display" class="text-sm font-medium"></p>
                         </div>
-                        <button onclick="showPage('settings')" class="admin-only p-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-colors" title="ตั้งค่า">
+                        <button onclick="showPage('settings')"
+                            class="admin-only p-2 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-colors"
+                            title="ตั้งค่า">
                             ⚙️
                         </button>
-                        <button onclick="auth.logout()" class="p-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors text-xs font-bold" title="ออกจากระบบ">
+                        <button onclick="auth.logout()"
+                            class="p-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors text-xs font-bold"
+                            title="ออกจากระบบ">
                             OUT
                         </button>
                     </div>
@@ -86,16 +107,36 @@
 
                 <!-- Navigation Tabs -->
                 <nav class="flex gap-1 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 mask-fade">
-                    <button onclick="showPage('dashboard')" id="nav-dashboard" class="nav-tab active px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📊 แดชบอร์ด</button>
-                    <button onclick="showPage('validation')" id="nav-validation" class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">✓ ตรวจสอบ</button>
-                    <button onclick="showPage('analysis')" id="nav-analysis" class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📈 วิเคราะห์</button>
-                    <button onclick="showPage('teachers')" id="nav-teachers" class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">👨‍🏫 ครู</button>
-                    <button onclick="showPage('subjects')" id="nav-subjects" class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📚 รายวิชา</button>
-                    <button onclick="showPage('classrooms')" id="nav-classrooms" class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">🏢 ห้องเรียน</button>
-                    <button onclick="showPage('timetable')" id="nav-timetable" class="nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📅 ตารางสอน</button>
-                    <button onclick="showPage('teacher-timetable')" id="nav-teacher-timetable" class="nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">👨‍🏫 ตารางรายครู</button>
-                    <button onclick="showPage('substitute')" id="nav-substitute" class="nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">🔄 สอนแทน</button>
-                    <button onclick="showPage('reports')" id="nav-reports" class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📊 รายงาน</button>
+                    <button onclick="showPage('dashboard')" id="nav-dashboard"
+                        class="nav-tab active px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📊
+                        แดชบอร์ด</button>
+                    <button onclick="showPage('validation')" id="nav-validation"
+                        class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">✓
+                        ตรวจสอบ</button>
+                    <button onclick="showPage('analysis')" id="nav-analysis"
+                        class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📈
+                        วิเคราะห์</button>
+                    <button onclick="showPage('teachers')" id="nav-teachers"
+                        class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">👨‍🏫
+                        ครู</button>
+                    <button onclick="showPage('subjects')" id="nav-subjects"
+                        class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📚
+                        รายวิชา</button>
+                    <button onclick="showPage('classrooms')" id="nav-classrooms"
+                        class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">🏢
+                        ห้องเรียน</button>
+                    <button onclick="showPage('timetable')" id="nav-timetable"
+                        class="nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📅
+                        ตารางสอน</button>
+                    <button onclick="showPage('teacher-timetable')" id="nav-teacher-timetable"
+                        class="nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">👨‍🏫
+                        ตารางรายครู</button>
+                    <button onclick="showPage('substitute')" id="nav-substitute"
+                        class="nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">🔄
+                        สอนแทน</button>
+                    <button onclick="showPage('reports')" id="nav-reports"
+                        class="admin-only nav-tab px-3 py-2 text-sm whitespace-nowrap bg-white/10 rounded-t-lg hover:bg-white/20">📊
+                        รายงาน</button>
                 </nav>
             </div>
         </header>
@@ -167,11 +208,13 @@
                 <div class="bg-white rounded-xl shadow-sm p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold text-gray-800">จัดการข้อมูลครู</h2>
-                        <button onclick="openAddTeacherModal()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm shadow-sm transition-transform active:scale-95">
+                        <button onclick="openAddTeacherModal()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm shadow-sm transition-transform active:scale-95">
                             <span>+</span> เพิ่มครู
                         </button>
                     </div>
-                    <input type="text" id="search-teachers" placeholder="🔍 ค้นหาครู..." class="w-full px-4 py-2 mb-4 border rounded-lg bg-gray-50 focus:bg-white transition-colors">
+                    <input type="text" id="search-teachers" placeholder="🔍 ค้นหาครู..."
+                        class="w-full px-4 py-2 mb-4 border rounded-lg bg-gray-50 focus:bg-white transition-colors">
                     <div class="overflow-x-auto rounded-lg border">
                         <table class="w-full text-sm">
                             <thead class="bg-gray-100 text-gray-700">
@@ -195,11 +238,13 @@
                 <div class="bg-white rounded-xl shadow-sm p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold text-gray-800">จัดการรายวิชา</h2>
-                        <button onclick="openAddSubjectModal()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm shadow-sm transition-transform active:scale-95">
+                        <button onclick="openAddSubjectModal()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm shadow-sm transition-transform active:scale-95">
                             <span>+</span> เพิ่มรายวิชา
                         </button>
                     </div>
-                    <input type="text" id="search-subjects" placeholder="🔍 ค้นหารายวิชา..." class="w-full px-4 py-2 mb-4 border rounded-lg bg-gray-50 focus:bg-white transition-colors">
+                    <input type="text" id="search-subjects" placeholder="🔍 ค้นหารายวิชา..."
+                        class="w-full px-4 py-2 mb-4 border rounded-lg bg-gray-50 focus:bg-white transition-colors">
                     <div class="overflow-x-auto rounded-lg border">
                         <table class="w-full text-sm">
                             <thead class="bg-gray-100 text-gray-700">
@@ -223,7 +268,8 @@
                 <div class="bg-white rounded-xl shadow-sm p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold text-gray-800">จัดการห้องเรียน</h2>
-                        <button onclick="openAddClassroomModal()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm shadow-sm transition-transform active:scale-95">
+                        <button onclick="openAddClassroomModal()"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm shadow-sm transition-transform active:scale-95">
                             <span>+</span> เพิ่มห้อง
                         </button>
                     </div>
@@ -235,7 +281,7 @@
             <div id="page-timetable" class="page-view hidden animate-fadeIn">
                 <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-20 md:mb-0">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">📅 จัดตารางสอน</h2>
-                    
+
                     <!-- Subject Pool -->
                     <div class="mb-6 p-4 bg-gray-50 rounded-xl border-dashed border-2 border-gray-300">
                         <p class="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
@@ -303,11 +349,13 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="text-xs font-semibold text-gray-500">วันที่</label>
-                                    <input type="date" id="sub-date" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                                    <input type="date" id="sub-date" required
+                                        class="w-full px-3 py-2 border rounded-lg text-sm">
                                 </div>
                                 <div>
                                     <label class="text-xs font-semibold text-gray-500">วันในตาราง</label>
-                                    <select id="sub-day" required class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                                    <select id="sub-day" required
+                                        class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
                                         <option value="">-- เลือกวัน --</option>
                                         <option value="จันทร์">จันทร์</option>
                                         <option value="อังคาร">อังคาร</option>
@@ -317,12 +365,13 @@
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <!-- Detailed Form -->
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="text-xs font-semibold text-gray-500">คาบที่</label>
-                                    <select id="sub-period" required class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                                    <select id="sub-period" required
+                                        class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
                                         <option value="1">1 (08:00-09:00)</option>
                                         <option value="2">2 (09:00-10:00)</option>
                                         <option value="3">3 (10:00-11:00)</option>
@@ -334,7 +383,8 @@
                                 </div>
                                 <div>
                                     <label class="text-xs font-semibold text-gray-500">เหตุผล</label>
-                                    <select id="sub-reason" required class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                                    <select id="sub-reason" required
+                                        class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
                                         <option value="ลาป่วย">ลาป่วย</option>
                                         <option value="ลากิจ">ลากิจ</option>
                                         <option value="ราชการ">ไปราชการ</option>
@@ -345,15 +395,18 @@
 
                             <div>
                                 <label class="text-xs font-semibold text-gray-500">ครูเจ้าของวิชา</label>
-                                <select id="sub-leaving-teacher" required class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
+                                <select id="sub-leaving-teacher" required
+                                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
                             </div>
 
                             <div>
                                 <label class="text-xs font-semibold text-gray-500">ครูผู้สอนแทน</label>
-                                <select id="sub-teacher" required class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
+                                <select id="sub-teacher" required
+                                    class="w-full px-3 py-2 border rounded-lg text-sm bg-white"></select>
                             </div>
 
-                            <button type="submit" class="w-full py-3 bg-green-600 text-white rounded-lg font-bold shadow-md hover:bg-green-700 transition">บันทึกข้อมูล</button>
+                            <button type="submit"
+                                class="w-full py-3 bg-green-600 text-white rounded-lg font-bold shadow-md hover:bg-green-700 transition">บันทึกข้อมูล</button>
                         </form>
                     </div>
 
@@ -371,19 +424,22 @@
             <div id="page-reports" class="page-view hidden animate-fadeIn">
                 <div class="bg-white rounded-xl shadow-sm p-6 max-w-2xl mx-auto">
                     <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">📤 ส่งออกรายงานและข้อมูล</h3>
-                    
+
                     <div class="grid gap-4">
-                        <button onclick="exportToJSON()" class="flex items-center justify-between px-6 py-4 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 transition text-blue-800">
+                        <button onclick="exportToJSON()"
+                            class="flex items-center justify-between px-6 py-4 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 transition text-blue-800">
                             <span class="font-bold">JSON Backup</span>
                             <span class="text-xl">💾</span>
                         </button>
-                        
-                        <button onclick="exportToCSV()" class="flex items-center justify-between px-6 py-4 bg-green-50 hover:bg-green-100 rounded-xl border border-green-200 transition text-green-800">
+
+                        <button onclick="exportToCSV()"
+                            class="flex items-center justify-between px-6 py-4 bg-green-50 hover:bg-green-100 rounded-xl border border-green-200 transition text-green-800">
                             <span class="font-bold">Excel / CSV Report</span>
                             <span class="text-xl">📊</span>
                         </button>
-                        
-                        <button onclick="printTimetable()" class="flex items-center justify-between px-6 py-4 bg-purple-50 hover:bg-purple-100 rounded-xl border border-purple-200 transition text-purple-800">
+
+                        <button onclick="printTimetable()"
+                            class="flex items-center justify-between px-6 py-4 bg-purple-50 hover:bg-purple-100 rounded-xl border border-purple-200 transition text-purple-800">
                             <span class="font-bold">Print Friendly</span>
                             <span class="text-xl">🖨️</span>
                         </button>
@@ -409,12 +465,14 @@
                     <form id="settings-form" class="space-y-5">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อโรงเรียน</label>
-                            <input type="text" id="set-school-name" class="w-full px-4 py-2 border rounded-lg focus:ring-1 focus:ring-green-500">
+                            <input type="text" id="set-school-name"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-1 focus:ring-green-500">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">ปีการศึกษา</label>
-                                <input type="text" id="set-academic-year" placeholder="2567" class="w-full px-4 py-2 border rounded-lg">
+                                <input type="text" id="set-academic-year" placeholder="2567"
+                                    class="w-full px-4 py-2 border rounded-lg">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">ภาคเรียน</label>
@@ -424,7 +482,8 @@
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition font-medium">บันทึกการตั้งค่า</button>
+                        <button type="submit"
+                            class="w-full py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition font-medium">บันทึกการตั้งค่า</button>
                     </form>
                 </div>
             </div>
@@ -436,11 +495,13 @@
 
     <!-- Modals -->
     <!-- Add Teacher Modal -->
-    <div id="add-teacher-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div id="add-teacher-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 modal-backdrop">
             <h3 class="text-xl font-bold text-gray-800 mb-4">เพิ่มข้อมูลครู</h3>
             <form id="add-teacher-form" class="space-y-3">
-                <input type="text" id="teacher-name" required placeholder="ชื่อ-นามสกุล" class="w-full px-3 py-2 border rounded-lg">
+                <input type="text" id="teacher-name" required placeholder="ชื่อ-นามสกุล"
+                    class="w-full px-3 py-2 border rounded-lg">
                 <select id="teacher-department" required class="w-full px-3 py-2 border rounded-lg">
                     <option value="">-- กลุ่มสาระฯ --</option>
                     <option value="ภาษาไทย">ภาษาไทย</option>
@@ -453,84 +514,113 @@
                     <option value="การงานอาชีพ">การงานอาชีพ</option>
                 </select>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="tel" id="teacher-phone" placeholder="เบอร์โทร" class="w-full px-3 py-2 border rounded-lg text-sm">
-                    <input type="text" id="teacher-building" placeholder="อาคารพักครู" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <input type="tel" id="teacher-phone" placeholder="เบอร์โทร"
+                        class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <input type="text" id="teacher-building" placeholder="อาคารพักครู"
+                        class="w-full px-3 py-2 border rounded-lg text-sm">
                 </div>
-                <input type="email" id="teacher-email" placeholder="อีเมล" class="w-full px-3 py-2 border rounded-lg text-sm">
+                <input type="email" id="teacher-email" placeholder="อีเมล"
+                    class="w-full px-3 py-2 border rounded-lg text-sm">
                 <div class="flex items-center gap-2">
                     <label class="text-sm text-gray-600">คาบสอนสูงสุด:</label>
-                    <input type="number" id="teacher-max-periods" value="30" class="w-20 px-2 py-1 border rounded text-center">
+                    <input type="number" id="teacher-max-periods" value="30"
+                        class="w-20 px-2 py-1 border rounded text-center">
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeAddTeacherModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ยกเลิก</button>
-                    <button type="submit" class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">บันทึก</button>
+                    <button type="button" onclick="closeAddTeacherModal()"
+                        class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ยกเลิก</button>
+                    <button type="submit"
+                        class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">บันทึก</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Add Subject Modal -->
-    <div id="add-subject-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div id="add-subject-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 modal-backdrop">
             <h3 class="text-xl font-bold text-gray-800 mb-4">เพิ่มรายวิชา</h3>
             <form id="add-subject-form" class="space-y-3">
                 <div class="flex gap-2">
-                    <input type="text" id="subject-code" required placeholder="รหัสวิชา (เช่น ค21101)" class="w-1/3 px-3 py-2 border rounded-lg font-mono">
-                    <input type="text" id="subject-name" required placeholder="ชื่อวิชา" class="w-2/3 px-3 py-2 border rounded-lg">
+                    <input type="text" id="subject-code" required placeholder="รหัสวิชา (เช่น ค21101)"
+                        class="w-1/3 px-3 py-2 border rounded-lg font-mono">
+                    <input type="text" id="subject-name" required placeholder="ชื่อวิชา"
+                        class="w-2/3 px-3 py-2 border rounded-lg">
                 </div>
-                <input type="text" id="subject-grade" required placeholder="ชั้นเรียน (เช่น ม.1/1)" class="w-full px-3 py-2 border rounded-lg">
-                <input type="text" id="subject-teacher" required placeholder="ครูผู้สอน (พิมพ์ชื่อ)" class="w-full px-3 py-2 border rounded-lg">
+                <input type="text" id="subject-grade" required placeholder="ชั้นเรียน (เช่น ม.1/1)"
+                    class="w-full px-3 py-2 border rounded-lg">
+                <input type="text" id="subject-teacher" required placeholder="ครูผู้สอน (พิมพ์ชื่อ)"
+                    class="w-full px-3 py-2 border rounded-lg">
                 <div class="flex gap-2">
-                    <input type="number" id="subject-hours" value="1" min="1" max="10" placeholder="ชม." class="w-20 px-3 py-2 border rounded-lg">
-                    <input type="text" id="subject-lab" placeholder="ห้องปฏิบัติการ (ถ้ามี)" class="flex-1 px-3 py-2 border rounded-lg">
+                    <input type="number" id="subject-hours" value="1" min="1" max="10" placeholder="ชม."
+                        class="w-20 px-3 py-2 border rounded-lg">
+                    <input type="text" id="subject-lab" placeholder="ห้องปฏิบัติการ (ถ้ามี)"
+                        class="flex-1 px-3 py-2 border rounded-lg">
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeAddSubjectModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ยกเลิก</button>
-                    <button type="submit" class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">บันทึก</button>
+                    <button type="button" onclick="closeAddSubjectModal()"
+                        class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ยกเลิก</button>
+                    <button type="submit"
+                        class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">บันทึก</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Add Classroom Modal -->
-    <div id="add-classroom-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div id="add-classroom-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 modal-backdrop">
             <h3 class="text-xl font-bold text-gray-800 mb-4">เพิ่มห้องเรียน</h3>
             <form id="add-classroom-form" class="space-y-4">
-                <input type="text" id="classroom-name" required placeholder="ชื่อห้อง (เช่น 101)" class="w-full px-3 py-2 border rounded-lg">
-                <input type="text" id="classroom-building" placeholder="อาคาร" class="w-full px-3 py-2 border rounded-lg">
+                <input type="text" id="classroom-name" required placeholder="ชื่อห้อง (เช่น 101)"
+                    class="w-full px-3 py-2 border rounded-lg">
+                <input type="text" id="classroom-building" placeholder="อาคาร"
+                    class="w-full px-3 py-2 border rounded-lg">
                 <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeAddClassroomModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ยกเลิก</button>
-                    <button type="submit" class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">บันทึก</button>
+                    <button type="button" onclick="closeAddClassroomModal()"
+                        class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ยกเลิก</button>
+                    <button type="submit"
+                        class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">บันทึก</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Confirm Modal -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div id="confirm-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 modal-backdrop text-center">
             <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                </svg>
             </div>
             <h3 id="confirm-title" class="text-lg font-bold text-gray-900 mb-2">ยืนยันการลบ</h3>
             <p id="confirm-message" class="text-gray-500 mb-6 text-sm">คุณแน่ใจหรือไม่ที่จะดำเนินการนี้?</p>
             <div class="flex gap-3">
-                <button onclick="closeConfirmModal()" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition">ยกเลิก</button>
-                <button id="confirm-btn" class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition shadow-md">ยืนยัน ลบ</button>
+                <button onclick="closeConfirmModal()"
+                    class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition">ยกเลิก</button>
+                <button id="confirm-btn"
+                    class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition shadow-md">ยืนยัน
+                    ลบ</button>
             </div>
         </div>
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white bg-opacity-80 z-[60] hidden flex items-center justify-center">
+    <div id="loading-overlay"
+        class="fixed inset-0 bg-white bg-opacity-80 z-[60] hidden flex items-center justify-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
     </div>
 
     <!-- Scripts -->
-    <script src="js/supabase-client.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/supabase-client.js?v=2"></script>
+    <script src="js/auth.js?v=2"></script>
+    <script src="js/app.js?v=2"></script>
     <script>
         // Inline init logic if needed, but handled in app.js
         function handleLogin(e) {
@@ -549,4 +639,5 @@
         }
     </script>
 </body>
+
 </html>

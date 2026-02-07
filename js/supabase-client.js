@@ -2,7 +2,7 @@
 const SUPABASE_URL = 'https://yefpafuqjbdvkyiynziw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllZnBhZnVxamJkdmt5aXlueml3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzc1NTksImV4cCI6MjA4NTk1MzU1OX0.QljXcAwYwkNYJjfBdmt9iIA5aHoFdZkU2MJXda7f4TU';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const appSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Data SDK Wrapper to match original interface somewhat but using Supabase
 const dataSdk = {
@@ -11,11 +11,11 @@ const dataSdk = {
         // For now, fetch everything to keep it simple like lostorage version
         try {
             const [teachers, subjects, classrooms, timetable, substitutes] = await Promise.all([
-                supabase.from('teachers').select('*'),
-                supabase.from('subjects').select('*'),
-                supabase.from('classrooms').select('*'),
-                supabase.from('timetable').select('*'),
-                supabase.from('substitutes').select('*')
+                appSupabaseClient.from('teachers').select('*'),
+                appSupabaseClient.from('subjects').select('*'),
+                appSupabaseClient.from('classrooms').select('*'),
+                appSupabaseClient.from('timetable').select('*'),
+                appSupabaseClient.from('substitutes').select('*')
             ]);
 
             const allData = [
@@ -50,7 +50,7 @@ const dataSdk = {
         // Remove client-side only props
         const { type, __backendId, ...data } = item;
 
-        const { data: created, error } = await supabase.from(table).insert(data).select().single();
+        const { data: created, error } = await appSupabaseClient.from(table).insert(data).select().single();
 
         if (error) {
             console.error("Create error:", error);
@@ -73,7 +73,7 @@ const dataSdk = {
         const table = tableMap[item.type];
         if (!table || !item.__backendId) return { isOk: false };
 
-        const { error } = await supabase.from(table).delete().eq('id', item.__backendId);
+        const { error } = await appSupabaseClient.from(table).delete().eq('id', item.__backendId);
 
         if (error) {
             console.error("Delete error:", error);

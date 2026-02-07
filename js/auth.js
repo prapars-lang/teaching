@@ -4,14 +4,14 @@ const auth = {
     profile: null,
 
     async init() {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await appSupabaseClient.auth.getSession();
         if (session?.user) {
             this.user = session.user;
             await this.fetchProfile();
         }
 
         // Auth State Listener
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        appSupabaseClient.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
                 this.user = session.user;
                 await this.fetchProfile();
@@ -26,7 +26,7 @@ const auth = {
     },
 
     async login(email, password) {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await appSupabaseClient.auth.signInWithPassword({ email, password });
         if (error) {
             alert('Login failed: ' + error.message);
             return false;
@@ -35,7 +35,7 @@ const auth = {
     },
 
     async register(email, password, role = 'teacher', name = '') {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await appSupabaseClient.auth.signUp({
             email,
             password,
             options: {
@@ -50,7 +50,7 @@ const auth = {
 
         if (data.user) {
             // Create Profile
-            const { error: profileError } = await supabase.from('profiles').insert({
+            const { error: profileError } = await appSupabaseClient.from('profiles').insert({
                 id: data.user.id,
                 role: role,
                 name: name
@@ -64,14 +64,14 @@ const auth = {
     },
 
     async logout() {
-        await supabase.auth.signOut();
+        await appSupabaseClient.auth.signOut();
         window.location.reload();
     },
 
     async fetchProfile() {
         if (!this.user) return;
         try {
-            const { data, error } = await supabase.from('profiles').select('*').eq('id', this.user.id).single();
+            const { data, error } = await appSupabaseClient.from('profiles').select('*').eq('id', this.user.id).single();
             if (data) {
                 this.profile = data;
             } else if (!error) {
