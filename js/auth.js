@@ -84,13 +84,30 @@ const auth = {
     },
 
     updateUI() {
-        const loginModal = document.getElementById('login-screen');
-        const appContent = document.getElementById('app-content');
-        const userInfo = document.getElementById('user-info-display');
+        // IDs matched to new index.html
+        const loginModal = document.getElementById('login-modal');
+        const appContent = document.getElementById('app');
+        const userInfo = document.getElementById('user-display-name');
 
         if (this.user) {
             if (loginModal) loginModal.classList.add('hidden');
-            if (appContent) appContent.classList.remove('hidden');
+            if (appContent) {
+                appContent.classList.remove('hidden');
+                // Trigger Data Load if not already loaded? 
+                // Better to call it only once or check if appState is empty?
+                // initApp checks for data, or we can just call it (it fetches). 
+                // Logic: initialization is separate from just showing UI. 
+                if (window.initApp) {
+                    // Check if data is loaded to avoid double fetch on re-auth? 
+                    // appState is global. 
+                    if (appState.allData.teachers.length === 0 && appState.allData.subjects.length === 0) {
+                        window.initApp();
+                    } else {
+                        // Just render if data exists
+                        // window.renderAll(); 
+                    }
+                }
+            }
 
             // Update User Info Display
             if (userInfo) {
@@ -106,17 +123,8 @@ const auth = {
                     el.classList.remove('hidden');
                 } else {
                     el.classList.add('hidden');
-                    if (el.tagName === 'BUTTON' || el.tagName === 'A') {
-                        // Double ensure it's not clickable if simple hidden class isn't enough (it is with tailwind but safety first)
-                    }
                 }
             });
-
-            // Teacher specific logic
-            if (role === 'teacher') {
-                // Auto-redirect to teacher timetable if on dashboard?
-                // For now, just hide the other tabs via the .admin-only class on the nav items
-            }
 
         } else {
             if (loginModal) loginModal.classList.remove('hidden');
@@ -126,3 +134,47 @@ const auth = {
 };
 
 window.auth = auth;
+
+// UI Helpers
+window.showRegister = () => {
+    document.getElementById('login-modal')?.classList.add('hidden');
+    document.getElementById('register-modal')?.classList.remove('hidden');
+};
+
+window.showLogin = () => {
+    document.getElementById('register-modal')?.classList.add('hidden');
+    document.getElementById('login-modal')?.classList.remove('hidden');
+};
+
+// Auto init auth logic
+document.addEventListener('DOMContentLoaded', () => {
+    auth.init();
+
+    // Bind Login Form
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            await auth.login(email, password);
+        });
+    }
+
+    // Bind Register Form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            await auth.register(email, password, 'teacher', name);
+            // After register success, show login or auto login?
+            // current register logic alerts and returns true. 
+            // It doesn't auto login (Supabase might, but we didn't handle that explicitly in auth.register return).
+            // Let's assume user needs to login or we switch to login view.
+            window.showLogin();
+        });
+    }
+});
